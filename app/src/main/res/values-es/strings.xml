@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Lumen</string>
+    <string name="app_description">Finance Tracker</string>
+    <string name="user_logged_off">Forastero</string>
+    <string name="chevron_right_description">Icono de flecha derecha</string>
+    <string name="arrow_back_description">Icono de fecha hacia atrás</string>
+    <string name="close_icon_description">Cerrar</string>
+
+    <string name="sign_up_label">Registrarse</string>
+    <string name="login_label">Ingresar</string>
+
+    <string name="email_text_field_label">Correo electrónico</string>
+    <string name="password_text_field_label">Contraseña</string>
+    <string name="visibility_icon_description">Mostrar contraseña</string>
+    <string name="visibility_off_icon_description">Ocultar contraseña</string>
+    <string name="or_label">O</string>
+
+
+    <!--  Splash Screen Strings  -->
+    <string name="splash_icon_description">Icono de lámpara</string>
+
+    <!--  Home Screen Strings  -->
+    <string name="home_add_icon_description">Icono de añadir</string>
+    <string name="home_empty_info_message">Por favor, añade su primera transacción para empezar a rastrear sus finanzas.</string>
+
+    <!--  User Configuration Screen  -->
+    <string name="user_configuration_add_photo">Añadir foto</string>
+    <string name="user_configuration_greeting_user">Hola, %s</string>
+    <string name="user_configuration_selected_language">Idioma</string>
+    <string name="user_configuration_english_language">Inglés</string>
+    <string name="user_configuration_portuguese_language">Portugués</string>
+    <string name="user_configuration_spanish_language">Español</string>
+    <string name="user_configuration_selected_currency">Moneda</string>
+    <string name="user_configuration_ask_login_title">Eh, Forastero!</string>
+    <string name="user_configuration_ask_login_message">¿Qué tal hacer iniciar tu sesión o registrarse para tener tus datos salvos en los servidores? Con esto no perderás tus datos y será capaz de mantener el brillo en tus finanzas.</string>
+
+    <!--  Sign Up Screen  -->
+    <string name="sign_up_confirm_password_text_field_label">Confirma tu contraseña</string>
+</resources>

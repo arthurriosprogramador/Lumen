@@ -1,0 +1,38 @@
+<resources>
+    <string name="app_name">Lumen</string>
+    <string name="app_description">Finance Tracker</string>
+    <string name="user_logged_off">Stranger</string>
+    <string name="chevron_right_description">Chevron right icon</string>
+    <string name="arrow_back_description">Arrow back icon</string>
+    <string name="close_icon_description">Close</string>
+
+    <string name="sign_up_label">Sign up</string>
+    <string name="login_label">Log in</string>
+
+    <string name="email_text_field_label">Email</string>
+    <string name="password_text_field_label">Password</string>
+    <string name="visibility_icon_description">Show password</string>
+    <string name="visibility_off_icon_description">Hide password</string>
+    <string name="or_label">Or</string>
+
+    <!--  Splash Screen Strings  -->
+    <string name="splash_icon_description">Lightbulb icon</string>
+
+    <!--  Home Screen Strings  -->
+    <string name="home_add_icon_description">Add icon</string>
+    <string name="home_empty_info_message">Please, add you first transaction to start tracking your finance.</string>
+
+    <!--  User Configuration Screen  -->
+    <string name="user_configuration_add_photo">Add photo</string>
+    <string name="user_configuration_greeting_user">Hi, %s</string>
+    <string name="user_configuration_selected_language">Language</string>
+    <string name="user_configuration_english_language">English</string>
+    <string name="user_configuration_portuguese_language">Portuguese</string>
+    <string name="user_configuration_spanish_language">Spanish</string>
+    <string name="user_configuration_selected_currency">Currency</string>
+    <string name="user_configuration_ask_login_title">Hey, Stranger!</string>
+    <string name="user_configuration_ask_login_message">How about to log in or sign up to have your data saved in the server? With that you won\'t lose your data and will be able to keep shining your finances.</string>
+
+    <!--  Sign Up Screen  -->
+    <string name="sign_up_confirm_password_text_field_label">Confirm your password</string>
+</resources>
