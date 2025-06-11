@@ -15,6 +15,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -27,12 +28,20 @@ import com.arthurriosribeiro.lumen.components.AccountMenuSection
 import com.arthurriosribeiro.lumen.components.CircleAvatar
 import com.arthurriosribeiro.lumen.model.Languages
 import com.arthurriosribeiro.lumen.navigation.LumenScreens
-import com.arthurriosribeiro.lumen.screens.MainViewModel
+import com.arthurriosribeiro.lumen.screens.viewmodel.AuthViewModel
+import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
 import com.arthurriosribeiro.lumen.utils.animation.orDash
+import kotlinx.coroutines.launch
 
 @Composable
-fun UserConfigurationScreen(navController: NavController, viewModel: MainViewModel) {
-    Scaffold(bottomBar = { }) {
+fun UserConfigurationScreen(
+    navController: NavController,
+    viewModel: MainViewModel,
+    authViewModel: AuthViewModel) {
+
+    val coroutineScope = rememberCoroutineScope()
+
+    Scaffold {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -73,37 +82,56 @@ fun UserConfigurationScreen(navController: NavController, viewModel: MainViewMod
                     sectionText = viewModel.accountConfig.value?.selectedCurrency.orDash()
                 )
             }
-            Column(
-                modifier = Modifier.padding(horizontal = 24.dp)
-            ) {
-                Text(
-                    stringResource(R.string.user_configuration_ask_login_title),
-                    style = MaterialTheme.typography.headlineSmall
-                )
-                Text(
-                    stringResource(R.string.user_configuration_ask_login_message),
-                    style = MaterialTheme.typography.bodyLarge
-                )
+            if (viewModel.accountConfig.value?.isUserLoggedIn == false) {
+                Column(
+                    modifier = Modifier.padding(horizontal = 24.dp)
+                ) {
+                    Text(
+                        stringResource(R.string.user_configuration_ask_login_title),
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                    Text(
+                        stringResource(R.string.user_configuration_ask_login_message),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
 
-                TextButton(
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    onClick = {}) {
-                    Text(
-                        stringResource(R.string.login_label),
-                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                        textDecoration = TextDecoration.Underline
-                    )
+                    TextButton(
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        onClick = {}) {
+                        Text(
+                            stringResource(R.string.login_label),
+                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                            textDecoration = TextDecoration.Underline
+                        )
+                    }
+                    TextButton(
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        onClick = {
+                            navController.navigate(LumenScreens.SIGN_UP_SCREEN.name)
+                        }) {
+                        Text(
+                            stringResource(R.string.sign_up_label),
+                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                            textDecoration = TextDecoration.Underline
+                        )
+                    }
                 }
-                TextButton(
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    onClick = {
-                        navController.navigate(LumenScreens.SIGN_UP_SCREEN.name)
-                    }) {
-                    Text(
-                        stringResource(R.string.sign_up_label),
-                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                        textDecoration = TextDecoration.Underline
-                    )
+            } else {
+                Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                    TextButton(
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        onClick = {
+                            coroutineScope.launch {
+                                viewModel.accountConfig.value?.let { config -> authViewModel.signOut(config) }
+                                viewModel.getAccountConfig()
+                            }
+                        }) {
+                        Text(
+                            stringResource(R.string.sign_out_label),
+                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                            textDecoration = TextDecoration.Underline
+                        )
+                    }
                 }
             }
         }

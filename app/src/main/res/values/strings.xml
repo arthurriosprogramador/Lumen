@@ -8,12 +8,15 @@
 
     <string name="sign_up_label">Sign up</string>
     <string name="login_label">Log in</string>
+    <string name="sign_out_label">Log out</string>
 
     <string name="email_text_field_label">Email</string>
     <string name="password_text_field_label">Password</string>
     <string name="visibility_icon_description">Show password</string>
     <string name="visibility_off_icon_description">Hide password</string>
     <string name="or_label">Or</string>
+
+    <string name="default_error">Something went wrong. Please, try again later.</string>
 
     <!--  Splash Screen Strings  -->
     <string name="splash_icon_description">Lightbulb icon</string>
@@ -34,5 +37,16 @@
     <string name="user_configuration_ask_login_message">How about to log in or sign up to have your data saved in the server? With that you won\'t lose your data and will be able to keep shining your finances.</string>
 
     <!--  Sign Up Screen  -->
+    <string name="sign_up_title_instructions">Please, fill out all the fields form to sign up</string>
+    <string name="sign_up_name_text_field_label">Name</string>
     <string name="sign_up_confirm_password_text_field_label">Confirm your password</string>
+    <string name="sign_up_password_does_not_match_requirements">
+        Please, check your password. Your password must have:\n
+        ⦁ At least a lowercase character.\n
+        ⦁ At least an uppercase character.\n
+        ⦁ At least a numeric character.\n
+        ⦁ At least a non-numeric character.\n
+        ⦁ At least 8 characters.\n
+    </string>
+    <string name="sign_up_password_fields_do_not_match">The password field do not match. Please, check both fields.</string>
 </resources>

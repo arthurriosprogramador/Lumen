@@ -1,6 +1,5 @@
 package com.arthurriosribeiro.lumen.components
 
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -16,7 +15,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,9 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.arthurriosribeiro.lumen.R
-import com.arthurriosribeiro.lumen.screens.MainViewModel
-import androidx.core.net.toUri
-import com.arthurriosribeiro.lumen.model.AccountConfiguration
+import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
 import java.io.File
 
 
@@ -44,7 +40,7 @@ fun CircleAvatar(
 ) {
     val accountConfig = viewModel.accountConfig.value
     val context = LocalContext.current
-    var imagePath by remember { mutableStateOf<String?>(accountConfig?.userImage) }
+    var imagePath by remember { mutableStateOf(accountConfig?.userImage) }
 
 
     val launcher = rememberLauncherForActivityResult(

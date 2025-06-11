@@ -21,7 +21,9 @@ fun LumenTextField(
     keyboardType: KeyboardType = KeyboardType.Text,
     imeAction: ImeAction = ImeAction.Next,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
-    visualTransformation: VisualTransformation = VisualTransformation.None
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    isError: Boolean = false,
+    supportingText: (@Composable () -> Unit)? = null
 ) {
     TextField(
         modifier = modifier,
@@ -39,6 +41,8 @@ fun LumenTextField(
             focusedContainerColor = MaterialTheme.colorScheme.surface,
             focusedIndicatorColor = MaterialTheme.colorScheme.primary
         ),
-        visualTransformation = visualTransformation
+        visualTransformation = visualTransformation,
+        isError = isError,
+        supportingText = supportingText
     )
 }

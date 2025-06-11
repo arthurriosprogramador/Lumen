@@ -41,6 +41,9 @@ interface LumenDao {
     @Query("UPDATE account_configuration SET name = :name WHERE id = :id")
     suspend fun updateUserName(name: String, id: Int)
 
+    @Query("UPDATE account_configuration SET isUserLoggedIn = :isUserLoggedIn WHERE id = :id")
+    suspend fun updateUserLoggedIn(isUserLoggedIn: Boolean, id: Int)
+
     @Query("UPDATE account_configuration SET selectedLanguage = :language WHERE id = :id")
     suspend fun updateUserLanguage(language: String, id: Int)
 

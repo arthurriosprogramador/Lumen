@@ -54,11 +54,11 @@ fun LumenBottomNavigationBar(
                                 else Color.Transparent,
                                 shape = CircleShape
                             )
-                            .size(48.dp),
+                            .size(54.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            modifier = Modifier.padding(vertical = 16.dp).size(32.dp),
+                            modifier = Modifier.padding(vertical = 16.dp),
                             imageVector = it,
                             contentDescription = lumenScreen.name
                         )

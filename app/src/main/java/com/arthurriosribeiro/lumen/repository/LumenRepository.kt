@@ -29,6 +29,8 @@ class LumenRepository @Inject constructor(private val lumenDao: LumenDao) {
 
     suspend fun updateUserName(name: String, id: Int) = lumenDao.updateUserName(name, id)
 
+    suspend fun updateUserLoggedIn(isUserLoggedIn: Boolean, id: Int) = lumenDao.updateUserLoggedIn(isUserLoggedIn, id)
+
     suspend fun updateUserLanguage(language: String, id: Int) = lumenDao.updateUserLanguage(language, id)
 
     suspend fun updateUserCurrency(currency: String, id: Int) = lumenDao.updateUserCurrency(currency, id)

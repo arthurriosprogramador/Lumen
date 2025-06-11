@@ -17,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.arthurriosribeiro.lumen.R
-import com.arthurriosribeiro.lumen.screens.MainViewModel
+import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
 
 @Composable
 fun AccountMenuSection(viewModel: MainViewModel, sectionLabel: String, sectionText: String ) {

@@ -1,4 +1,4 @@
-package com.arthurriosribeiro.lumen.screens
+package com.arthurriosribeiro.lumen.screens.viewmodel
 
 import android.content.Context
 import android.net.Uri

@@ -9,6 +9,7 @@
 
     <string name="sign_up_label">Registrarse</string>
     <string name="login_label">Ingresar</string>
+    <string name="sign_out_label">Finalizar la sessión</string>
 
     <string name="email_text_field_label">Correo electrónico</string>
     <string name="password_text_field_label">Contraseña</string>
@@ -16,6 +17,7 @@
     <string name="visibility_off_icon_description">Ocultar contraseña</string>
     <string name="or_label">O</string>
 
+    <string name="default_error">Algo salió mal. Intentalo de nuevo má tarde.</string>
 
     <!--  Splash Screen Strings  -->
     <string name="splash_icon_description">Icono de lámpara</string>
@@ -36,5 +38,16 @@
     <string name="user_configuration_ask_login_message">¿Qué tal hacer iniciar tu sesión o registrarse para tener tus datos salvos en los servidores? Con esto no perderás tus datos y será capaz de mantener el brillo en tus finanzas.</string>
 
     <!--  Sign Up Screen  -->
+    <string name="sign_up_title_instructions">Por favor, rellene todos los campos del formulário para registrarse.</string>
+    <string name="sign_up_name_text_field_label">Nombre</string>
     <string name="sign_up_confirm_password_text_field_label">Confirma tu contraseña</string>
+    <string name="sign_up_password_does_not_match_requirements">
+        Por favor, revise su contraseña. Su contraseña debe tener:\n
+        ⦁ Al menos un carácter minúscula.\n
+        ⦁ Al menos un carácter mayúscula.\n
+        ⦁ Al menos un número.\n
+        ⦁ Al menos un carácter no numérico.\n
+        ⦁ Al menos 8 caracteres.\n
+    </string>
+    <string name="sign_up_password_fields_do_not_match">Los campos de contraseña no correspondem. Por favor, revise ambos campos.</string>
 </resources>

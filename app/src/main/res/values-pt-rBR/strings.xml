@@ -9,12 +9,15 @@
 
     <string name="sign_up_label">Registrar-se</string>
     <string name="login_label">Entrar</string>
+    <string name="sign_out_label">Sair</string>
 
     <string name="email_text_field_label">Email</string>
     <string name="password_text_field_label">Senha</string>
     <string name="visibility_icon_description">Mostrar senha</string>
     <string name="visibility_off_icon_description">Ocultar senha</string>
     <string name="or_label">Ou</string>
+
+    <string name="default_error">Algo deu errado. Tente novamente mais tarde.</string>
 
     <!--  Splash Screen Strings  -->
     <string name="splash_icon_description">Ícone de lâmpada</string>
@@ -35,5 +38,16 @@
     <string name="user_configuration_ask_login_message">Que tal fazer login ou se registrar para fazer backup dos seus dados nos servidores? Assim, você não perderá seus dados e ajudará a manter suas finanças em dia.</string>
 
     <!--  Sign Up Screen  -->
+    <string name="sign_up_title_instructions">Por favor, preencha todos os campos do formulário para se registrar.</string>
+    <string name="sign_up_name_text_field_label">Nome</string>
     <string name="sign_up_confirm_password_text_field_label">Confirme sua senha</string>
+    <string name="sign_up_password_does_not_match_requirements">
+        Por favor, verifique sua senha. Sua senha deve ter:\n
+        ⦁ Ao menos uma letra minúscula.\n
+        ⦁ Ao menos uma letra maiúscula.\n
+        ⦁ Ao menos um número.\n
+        ⦁ Ao menos um caractere especial.\n
+        ⦁ Ao menos 8 caracteres.\n
+    </string>
+    <string name="sign_up_password_fields_do_not_match">Os campos de senha não correspondem. Por favor, revise ambos campos.</string>
 </resources>

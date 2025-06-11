@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Room
 import com.arthurriosribeiro.lumen.data.LumenDao
 import com.arthurriosribeiro.lumen.data.LumenDatabase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,4 +26,12 @@ object AppModule {
     fun provideLumenDatabase(@ApplicationContext context: Context): LumenDatabase =
         Room.databaseBuilder(context, LumenDatabase::class.java, "lumen_database")
             .fallbackToDestructiveMigration(false).build()
+
+    @Singleton
+    @Provides
+    fun provideFirebaseAuth() = FirebaseAuth.getInstance()
+
+    @Singleton
+    @Provides
+    fun provideFirebaseFirestore() = FirebaseFirestore.getInstance()
 }

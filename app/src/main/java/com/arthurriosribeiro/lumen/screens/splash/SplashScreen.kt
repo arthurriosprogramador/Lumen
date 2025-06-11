@@ -18,7 +18,7 @@ import com.arthurriosribeiro.lumen.R
 import com.arthurriosribeiro.lumen.model.Currencies
 import com.arthurriosribeiro.lumen.model.Languages
 import com.arthurriosribeiro.lumen.navigation.LumenScreens
-import com.arthurriosribeiro.lumen.screens.MainViewModel
+import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
 import com.arthurriosribeiro.lumen.utils.animation.shimmerAnimation
 import kotlinx.coroutines.delay
 
@@ -74,28 +74,6 @@ fun SplashScreen(navController: NavController, viewModel: MainViewModel) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-//            Box(modifier = Modifier.fillMaxSize()) {
-//                Canvas(modifier = Modifier.fillMaxSize()) {
-//                    val beamHeight = size.height * 0.2F
-//                    val beamWidth = size.width * 0.9F
-//                    val topY = center.y - beamHeight
-//                    drawPath(
-//                        path = Path().apply {
-//                            moveTo(center.x, topY)
-//                            lineTo(center.x - beamWidth / 2F, center.y + beamHeight)
-//                            lineTo(center.x + beamWidth / 2F, center.y + beamHeight)
-//                            close()
-//                        },
-//                        brush = Brush.radialGradient(
-//                            colors = listOf(
-//                                SoftGold.copy(alpha = 0.5F),
-//                                Color.Transparent
-//                            ),
-//                            center = center,
-//                            radius = beamHeight
-//                        )
-//                    )
-//                }
             Text(
                 stringResource(
                     R.string.app_name
@@ -116,4 +94,3 @@ fun SplashScreen(navController: NavController, viewModel: MainViewModel) {
         }
     }
 }
-//}
