@@ -16,6 +16,8 @@
     <string name="visibility_off_icon_description">Hide password</string>
     <string name="or_label">Or</string>
 
+    <string name="save_label">Save</string>
+
     <string name="default_error">Something went wrong. Please, try again later.</string>
 
     <!--  Splash Screen Strings  -->
@@ -28,6 +30,7 @@
     <!--  User Configuration Screen  -->
     <string name="user_configuration_add_photo">Add photo</string>
     <string name="user_configuration_greeting_user">Hi, %s</string>
+    <string name="user_configuration_name_label">Name</string>
     <string name="user_configuration_selected_language">Language</string>
     <string name="user_configuration_english_language">English</string>
     <string name="user_configuration_portuguese_language">Portuguese</string>
@@ -49,4 +52,7 @@
         ⦁ At least 8 characters.\n
     </string>
     <string name="sign_up_password_fields_do_not_match">The password field do not match. Please, check both fields.</string>
+
+    <!--  Log In Screen  -->
+    <string name="log_in_title">Welcome back. It\'s great to see you again!</string>
 </resources>

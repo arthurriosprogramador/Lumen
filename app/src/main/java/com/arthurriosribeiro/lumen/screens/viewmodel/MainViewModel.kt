@@ -7,6 +7,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.arthurriosribeiro.lumen.R
 import com.arthurriosribeiro.lumen.model.AccountConfiguration
 import com.arthurriosribeiro.lumen.model.Currencies
 import com.arthurriosribeiro.lumen.model.Languages
@@ -69,6 +70,36 @@ class MainViewModel @Inject constructor(private val lumenRepository: LumenReposi
         }
     }
 
+    fun updateUserName(name: String, id:Int) {
+        viewModelScope.launch {
+            runCatching {
+                lumenRepository.updateUserName(name, id)
+            }.onSuccess {
+                getAccountConfig()
+            }
+        }
+    }
+
+    fun updateUserCurrency(currency: String, id:Int) {
+        viewModelScope.launch {
+            runCatching {
+                lumenRepository.updateUserCurrency(currency, id)
+            }.onSuccess {
+                getAccountConfig()
+            }
+        }
+    }
+
+    fun updateUserLanguage(language: String, id:Int) {
+        viewModelScope.launch {
+            runCatching {
+                lumenRepository.updateUserCurrency(language, id)
+            }.onSuccess {
+                getAccountConfig()
+            }
+        }
+    }
+
     fun copyUriToInternalStorage(context: Context, uri: Uri): String? {
         val file = File(context.filesDir, "user_profile.jpg")
         return try {
@@ -81,6 +112,16 @@ class MainViewModel @Inject constructor(private val lumenRepository: LumenReposi
         } catch (e: IOException) {
             e.printStackTrace()
             null
+        }
+    }
+
+    fun getLanguageLabel(language: String): Int {
+        val languageCode = Languages.valueOf(language)
+
+        return when (languageCode) {
+            Languages.EN -> R.string.user_configuration_english_language
+            Languages.PT -> R.string.user_configuration_portuguese_language
+            Languages.ES -> R.string.user_configuration_spanish_language
         }
     }
 }

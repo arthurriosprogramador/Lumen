@@ -17,12 +17,12 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.QuerySnapshot
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import okhttp3.internal.wait
 import javax.inject.Inject
 
 @HiltViewModel
@@ -32,9 +32,9 @@ class AuthViewModel @Inject constructor(
     private val lumenRepository: LumenRepository
 ) : ViewModel() {
 
-    private val _signInState: MutableStateFlow<SignInState> =
-        MutableStateFlow(SignInState.SignedOut)
-    val signInState: StateFlow<SignInState> = _signInState
+    private val _signInState: MutableStateFlow<SignInState?> =
+        MutableStateFlow(null)
+    val signInState: StateFlow<SignInState?> = _signInState
 
     fun isValidEmail(email: String): Boolean {
         val regex =
@@ -83,17 +83,9 @@ class AuthViewModel @Inject constructor(
 
                     firebaseAuth.signInWithCredential(firebaseCredential).await()
                     sendUserInformationToFirestore(
-                        (firebaseAuth.currentUser?.displayName
-                            ?: accountConfiguration.name), accountConfiguration
+                        (firebaseAuth.currentUser?.displayName ?: accountConfiguration.name),
+                        accountConfiguration
                     )
-                    val userData = hashMapOf(
-                        USER_EMAIL to firebaseAuth.currentUser?.email,
-                        USER_NAME to (firebaseAuth.currentUser?.displayName
-                            ?: accountConfiguration.name),
-                        USER_SELECTED_LANGUAGE to accountConfiguration.selectedLanguage,
-                        USER_SELECTED_CURRENCY to accountConfiguration.selectedCurrency
-                    )
-                    firestore.collection(USERS_COLLECTION).document().set(userData)
                     _signInState.value = SignInState.Success
                 }
             }
@@ -111,27 +103,57 @@ class AuthViewModel @Inject constructor(
         context: Context,
         accountConfiguration: AccountConfiguration
     ) {
+        _signInState.value = SignInState.Loading
         firebaseAuth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    sendUserInformationToFirestore(name, accountConfiguration).addOnCompleteListener {
-                        if (it.isSuccessful) signInWithEmailAndPassword(email, password, context)
+                    sendUserInformationToFirestore(
+                        name,
+                        accountConfiguration
+                    ).addOnCompleteListener {
+                        if (it.isSuccessful) signInWithEmailAndPassword(
+                            email = email,
+                            password = password,
+                            context = context,
+                            accountConfiguration = accountConfiguration
+                        )
                     }
                 } else {
-                    _signInState.value =
-                        SignInState.Error(context.getString(R.string.default_error))
+                    val exceptionMessage = task.exception?.message
+                    if (exceptionMessage.isNullOrBlank()) {
+                        _signInState.value =
+                            SignInState.Error(context.getString(R.string.default_error))
+                    } else {
+                        _signInState.value = SignInState.Error(exceptionMessage)
+                    }
                 }
             }
     }
 
-    fun signInWithEmailAndPassword(email: String, password: String, context: Context) {
+    fun signInWithEmailAndPassword(
+        email: String,
+        password: String,
+        context: Context,
+        accountConfiguration: AccountConfiguration
+    ) {
         _signInState.value = SignInState.Loading
         firebaseAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 _signInState.value = SignInState.Success
+                viewModelScope.launch {
+                    lumenRepository.updateUserLoggedIn(
+                        id = accountConfiguration.id,
+                        isUserLoggedIn = true
+                    )
+                }
             } else {
-                _signInState.value =
-                    SignInState.Error(context.getString(R.string.default_error))
+                val exceptionMessage = task.exception?.message
+                if (exceptionMessage.isNullOrBlank()) {
+                    _signInState.value =
+                        SignInState.Error(context.getString(R.string.default_error))
+                } else {
+                    _signInState.value = SignInState.Error(exceptionMessage)
+                }
             }
         }
     }
@@ -149,22 +171,50 @@ class AuthViewModel @Inject constructor(
     private fun sendUserInformationToFirestore(
         name: String? = null,
         accountConfiguration: AccountConfiguration
-    ) : Task<Void> {
-        val userData = hashMapOf(
-            USER_EMAIL to firebaseAuth.currentUser?.email,
-            USER_NAME to name,
-            USER_SELECTED_LANGUAGE to accountConfiguration.selectedLanguage,
-            USER_SELECTED_CURRENCY to accountConfiguration.selectedCurrency
-        )
-        return firestore.collection(USERS_COLLECTION).document().set(userData)
-            .addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                viewModelScope.launch {
-                    lumenRepository.updateUserName(id = accountConfiguration.id, name = name.orEmpty())
-                    lumenRepository.updateUserLoggedIn(id = accountConfiguration.id, isUserLoggedIn = true)
+    ): Task<QuerySnapshot> {
+        return firestore.collection(USERS_COLLECTION)
+            .whereEqualTo(USER_EMAIL, firebaseAuth.currentUser?.email).get()
+            .addOnCompleteListener { queryTask ->
+                if (queryTask.isSuccessful && queryTask.result.isEmpty) {
+                    val userData = hashMapOf(
+                        USER_EMAIL to firebaseAuth.currentUser?.email,
+                        USER_NAME to name,
+                        USER_SELECTED_LANGUAGE to accountConfiguration.selectedLanguage,
+                        USER_SELECTED_CURRENCY to accountConfiguration.selectedCurrency
+                    )
+
+                    firestore.collection(USERS_COLLECTION).document().set(userData)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                viewModelScope.launch {
+                                    lumenRepository.updateUserName(
+                                        id = accountConfiguration.id,
+                                        name = name.orEmpty()
+                                    )
+                                    lumenRepository.updateUserLoggedIn(
+                                        id = accountConfiguration.id,
+                                        isUserLoggedIn = true
+                                    )
+                                }
+                            }
+                        }
+                } else {
+                    viewModelScope.launch {
+                        lumenRepository.updateUserName(
+                            id = accountConfiguration.id,
+                            name = name.orEmpty()
+                        )
+                        lumenRepository.updateUserLoggedIn(
+                            id = accountConfiguration.id,
+                            isUserLoggedIn = true
+                        )
+                    }
                 }
             }
-            }
+    }
+
+    fun cleanSignInState() {
+        _signInState.value = null
     }
 
     companion object {

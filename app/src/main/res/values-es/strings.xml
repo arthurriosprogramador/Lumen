@@ -17,6 +17,8 @@
     <string name="visibility_off_icon_description">Ocultar contraseña</string>
     <string name="or_label">O</string>
 
+    <string name="save_label">Salvar</string>
+
     <string name="default_error">Algo salió mal. Intentalo de nuevo má tarde.</string>
 
     <!--  Splash Screen Strings  -->
@@ -29,6 +31,7 @@
     <!--  User Configuration Screen  -->
     <string name="user_configuration_add_photo">Añadir foto</string>
     <string name="user_configuration_greeting_user">Hola, %s</string>
+    <string name="user_configuration_name_label">Nombre</string>
     <string name="user_configuration_selected_language">Idioma</string>
     <string name="user_configuration_english_language">Inglés</string>
     <string name="user_configuration_portuguese_language">Portugués</string>
@@ -50,4 +53,7 @@
         ⦁ Al menos 8 caracteres.\n
     </string>
     <string name="sign_up_password_fields_do_not_match">Los campos de contraseña no correspondem. Por favor, revise ambos campos.</string>
+
+    <!--  Log In Screen  -->
+    <string name="log_in_title">Bienvenido de nuevo. ¡Qué bueno verte nuevamente!</string>
 </resources>

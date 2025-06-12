@@ -1,5 +1,6 @@
 package com.arthurriosribeiro.lumen.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,9 +21,12 @@ import com.arthurriosribeiro.lumen.R
 import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
 
 @Composable
-fun AccountMenuSection(viewModel: MainViewModel, sectionLabel: String, sectionText: String ) {
+fun AccountMenuSection(sectionLabel: String, sectionText: String, onClick: (() -> Unit)? = null ) {
     Column(
         modifier = Modifier.padding(top = 16.dp)
+            .clickable {
+                onClick?.invoke()
+            }
     ) {
         Row(
             modifier = Modifier

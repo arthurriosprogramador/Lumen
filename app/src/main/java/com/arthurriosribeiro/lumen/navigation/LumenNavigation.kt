@@ -11,6 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
 import com.arthurriosribeiro.lumen.screens.home.HomeScreen
 import com.arthurriosribeiro.lumen.screens.home.tabs.UserConfigurationScreen
+import com.arthurriosribeiro.lumen.screens.login.LogInScreen
 import com.arthurriosribeiro.lumen.screens.signup.SignUpScreen
 import com.arthurriosribeiro.lumen.screens.splash.SplashScreen
 import com.arthurriosribeiro.lumen.screens.viewmodel.AuthViewModel
@@ -46,6 +47,24 @@ fun LumenNavigation() {
             }
         ) {
             SignUpScreen(navController, authViewModel, mainViewModel.accountConfig)
+        }
+
+        composable(
+            LumenScreens.LOG_IN_SCREEN.name,
+            enterTransition = {
+                slideInVertically(
+                    initialOffsetY = { it },
+                    animationSpec = tween(durationMillis = 1000)
+                )
+            },
+            exitTransition = {
+                slideOutVertically(
+                    targetOffsetY = { it },
+                    animationSpec = tween(durationMillis = 1000)
+                )
+            }
+        ) {
+            LogInScreen(navController, authViewModel, mainViewModel.accountConfig)
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.arthurriosribeiro.lumen.screens.home.tabs
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,14 +9,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -26,6 +33,9 @@ import androidx.navigation.NavController
 import com.arthurriosribeiro.lumen.R
 import com.arthurriosribeiro.lumen.components.AccountMenuSection
 import com.arthurriosribeiro.lumen.components.CircleAvatar
+import com.arthurriosribeiro.lumen.components.LumenBottomSheet
+import com.arthurriosribeiro.lumen.components.LumenRadioButton
+import com.arthurriosribeiro.lumen.components.LumenTextField
 import com.arthurriosribeiro.lumen.model.Languages
 import com.arthurriosribeiro.lumen.navigation.LumenScreens
 import com.arthurriosribeiro.lumen.screens.viewmodel.AuthViewModel
@@ -33,6 +43,7 @@ import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
 import com.arthurriosribeiro.lumen.utils.animation.orDash
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserConfigurationScreen(
     navController: NavController,
@@ -41,7 +52,69 @@ fun UserConfigurationScreen(
 
     val coroutineScope = rememberCoroutineScope()
 
+    val bottomSheetState = rememberModalBottomSheetState()
+
+    var showNameBottomSheet by remember { mutableStateOf(false) }
+    var showLanguageBottomSheet by remember { mutableStateOf(false) }
+    var showCurrencyBottomSheet by remember { mutableStateOf(false) }
+
+    val name = remember {
+        mutableStateOf(viewModel.accountConfig.value?.name.orEmpty())
+    }
+    val language = remember {
+        mutableStateOf(viewModel.accountConfig.value?.selectedLanguage.orEmpty())
+    }
+    val currency = remember {
+        mutableStateOf(viewModel.accountConfig.value?.selectedCurrency.orEmpty())
+    }
+
     Scaffold {
+
+        if (showNameBottomSheet) {
+            LumenBottomSheet(
+                onDismissRequest = { showNameBottomSheet = false },
+                sheetState = bottomSheetState,
+                title = stringResource(R.string.user_configuration_name_label),
+                content = {
+                    LumenTextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 24.dp),
+                        placeHolder = {},
+                        value = name
+                    )
+                },
+                isEditBottomSheet = true,
+                onEditButtonClick = {
+                    viewModel.updateUserName(name.value, viewModel.accountConfig.value?.id ?: 0)
+                }
+            )
+        }
+
+        if (showLanguageBottomSheet) {
+            LumenBottomSheet(
+                onDismissRequest = { showLanguageBottomSheet = false },
+                sheetState = bottomSheetState,
+                title = stringResource(R.string.user_configuration_selected_language),
+                content = {
+                    val languageList = listOf(
+                        stringResource(R.string.user_configuration_english_language),
+                        stringResource(R.string.user_configuration_spanish_language),
+                        stringResource(R.string.user_configuration_portuguese_language)
+                    )
+
+                    LumenRadioButton(
+                        options = languageList,
+                        currentSelectedOption = language.value
+                    )
+                },
+                isEditBottomSheet = true,
+                onEditButtonClick = {
+                    viewModel.updateUserLanguage(language.value, viewModel.accountConfig.value?.id ?: 0)
+                }
+            )
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -53,7 +126,10 @@ fun UserConfigurationScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 8.dp),
+                        .padding(horizontal = 24.dp, vertical = 8.dp)
+                        .clickable {
+                            showNameBottomSheet = true
+                        },
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -72,14 +148,14 @@ fun UserConfigurationScreen(
                 }
                 HorizontalDivider(modifier = Modifier.padding(top = 8.dp))
                 AccountMenuSection(
-                    viewModel = viewModel,
                     sectionLabel = stringResource(R.string.user_configuration_selected_language),
-                    sectionText = stringResource(getLanguageLabel(viewModel.accountConfig.value?.selectedLanguage.orDash()))
+                    sectionText = stringResource(viewModel.getLanguageLabel(viewModel.accountConfig.value?.selectedLanguage.orDash())),
+                    onClick = { showLanguageBottomSheet = true }
                 )
                 AccountMenuSection(
-                    viewModel = viewModel,
                     sectionLabel = stringResource(R.string.user_configuration_selected_currency),
-                    sectionText = viewModel.accountConfig.value?.selectedCurrency.orDash()
+                    sectionText = viewModel.accountConfig.value?.selectedCurrency.orDash(),
+                    onClick = { showCurrencyBottomSheet = true }
                 )
             }
             if (viewModel.accountConfig.value?.isUserLoggedIn == false) {
@@ -97,7 +173,9 @@ fun UserConfigurationScreen(
 
                     TextButton(
                         modifier = Modifier.align(Alignment.CenterHorizontally),
-                        onClick = {}) {
+                        onClick = {
+                            navController.navigate(LumenScreens.LOG_IN_SCREEN.name)
+                        }) {
                         Text(
                             stringResource(R.string.login_label),
                             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
@@ -138,12 +216,3 @@ fun UserConfigurationScreen(
     }
 }
 
-fun getLanguageLabel(language: String): Int {
-    val languageCode = Languages.valueOf(language)
-
-    return when (languageCode) {
-        Languages.EN -> R.string.user_configuration_english_language
-        Languages.PT -> R.string.user_configuration_portuguese_language
-        Languages.ES -> R.string.user_configuration_spanish_language
-    }
-}
