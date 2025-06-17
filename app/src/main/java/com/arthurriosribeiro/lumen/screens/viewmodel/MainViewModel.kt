@@ -12,6 +12,9 @@ import com.arthurriosribeiro.lumen.model.AccountConfiguration
 import com.arthurriosribeiro.lumen.model.Currencies
 import com.arthurriosribeiro.lumen.model.Languages
 import com.arthurriosribeiro.lumen.repository.LumenRepository
+import com.arthurriosribeiro.lumen.utils.FirestoreCollectionUtils
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.io.File
@@ -20,7 +23,11 @@ import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(private val lumenRepository: LumenRepository) :
+class MainViewModel @Inject constructor(
+    private val lumenRepository: LumenRepository,
+    private val firestore: FirebaseFirestore,
+    private val firebaseAuth: FirebaseAuth,
+) :
     ViewModel() {
 
     private val _accountConfig: MutableState<AccountConfiguration?> = mutableStateOf(null)
@@ -74,6 +81,10 @@ class MainViewModel @Inject constructor(private val lumenRepository: LumenReposi
         viewModelScope.launch {
             runCatching {
                 lumenRepository.updateUserName(name, id)
+                updateUserInformationOnFireStore(
+                    fieldToUpdate = FirestoreCollectionUtils.USER_NAME,
+                    fieldValue = name
+                )
             }.onSuccess {
                 getAccountConfig()
             }
@@ -84,6 +95,10 @@ class MainViewModel @Inject constructor(private val lumenRepository: LumenReposi
         viewModelScope.launch {
             runCatching {
                 lumenRepository.updateUserCurrency(currency, id)
+                updateUserInformationOnFireStore(
+                    fieldToUpdate = FirestoreCollectionUtils.USER_SELECTED_CURRENCY,
+                    fieldValue = currency
+                )
             }.onSuccess {
                 getAccountConfig()
             }
@@ -93,11 +108,28 @@ class MainViewModel @Inject constructor(private val lumenRepository: LumenReposi
     fun updateUserLanguage(language: String, id:Int) {
         viewModelScope.launch {
             runCatching {
-                lumenRepository.updateUserCurrency(language, id)
+                lumenRepository.updateUserLanguage(language, id)
+                updateUserInformationOnFireStore(
+                    fieldToUpdate = FirestoreCollectionUtils.USER_SELECTED_LANGUAGE,
+                    fieldValue = language
+                )
             }.onSuccess {
                 getAccountConfig()
             }
         }
+    }
+
+    private fun updateUserInformationOnFireStore(fieldToUpdate: String, fieldValue: String) {
+        firestore.collection(FirestoreCollectionUtils.USERS_COLLECTION)
+            .whereEqualTo(FirestoreCollectionUtils.USER_EMAIL, firebaseAuth.currentUser?.email)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                if (!snapshot.isEmpty) {
+                    val document = snapshot.documents.first()
+
+                    document.reference.update(fieldToUpdate, fieldValue)
+                }
+            }
     }
 
     fun copyUriToInternalStorage(context: Context, uri: Uri): String? {

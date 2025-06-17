@@ -20,6 +20,8 @@ class LumenRepository @Inject constructor(private val lumenDao: LumenDao) {
     suspend fun selectTransactionByTimestampRange(initialTimestamp: Long, finalTimestamp: Long) : List<UserTransaction> = lumenDao.selectTransactionByTimestampRange(initialTimestamp, finalTimestamp)
 
     suspend fun deleteTransaction(userTransaction: UserTransaction) = lumenDao.deleteTransaction(userTransaction)
+
+    suspend fun deleteAllTransactions() = lumenDao.deleteAllUserTransactions()
     //End of the region
 
     //Account configuration user
@@ -36,5 +38,7 @@ class LumenRepository @Inject constructor(private val lumenDao: LumenDao) {
     suspend fun updateUserCurrency(currency: String, id: Int) = lumenDao.updateUserCurrency(currency, id)
 
     suspend fun selectAccountConfiguration() : AccountConfiguration? = lumenDao.selectAccountConfiguration()
+
+    suspend fun deleteAllAccountConfiguration() = lumenDao.deleteAllAccountConfiguration()
     //End of the region
 }

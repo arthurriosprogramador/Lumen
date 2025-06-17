@@ -14,36 +14,47 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import com.arthurriosribeiro.lumen.model.Languages
+import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
 
 @Composable
-fun LumenRadioButton(options: List<String>, isColumn: Boolean = true, currentSelectedOption: String) {
-    val (selectedOption, onOptionSelected) = remember { mutableStateOf(options.first { it == currentSelectedOption }) }
+fun <T>LumenRadioButton(
+    modifier: Modifier,
+    options: List<T>? = null,
+    selectedOption: T,
+    onOptionSelected: (T) -> Unit,
+    isColumn: Boolean = true,
+    viewModel: MainViewModel? = null) {
     if (isColumn) {
         Column(
-            modifier = Modifier.selectableGroup()
+            modifier = modifier.selectableGroup()
         ) {
-            options.forEach {
-                Row(
-                    modifier = Modifier.fillMaxWidth()
-                        .selectable(
-                            selected = it == selectedOption,
-                            onClick = { onOptionSelected(it) },
-                            role = Role.RadioButton
+            if (!options.isNullOrEmpty()) {
+                options.forEach {
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(top = 16.dp)
+                            .selectable(
+                                selected = it == selectedOption,
+                                onClick = { onOptionSelected(it) },
+                                role = Role.RadioButton
+                            )
+                            .padding(horizontal = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = (it == selectedOption),
+                            onClick = null
                         )
-                        .padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    RadioButton(
-                        selected = (it == selectedOption),
-                        onClick = null
-                    )
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(start = 16.dp)
-                    )
+                        Text(
+                            text = if (it is Languages) stringResource(viewModel?.getLanguageLabel(it.name) ?: 0) else it as String,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(start = 16.dp)
+                        )
+                    }
                 }
             }
         }

@@ -34,6 +34,7 @@ fun LumenBottomSheet(
     onEditButtonClick: (() -> Unit) = {}
 ) {
     ModalBottomSheet(
+        modifier = Modifier.fillMaxHeight(),
         onDismissRequest = onDismissRequest,
         sheetState = sheetState
     ) {
@@ -41,7 +42,6 @@ fun LumenBottomSheet(
             modifier = Modifier
                 .padding(horizontal = 24.dp)
                 .fillMaxWidth()
-                .fillMaxHeight(0.3F)
         ) {
             IconButton(
                 modifier = Modifier
@@ -64,7 +64,8 @@ fun LumenBottomSheet(
             if (isEditBottomSheet) {
                 ElevatedButton(
                     modifier = Modifier
-                        .padding(top = 48.dp),
+                        .padding(top = 48.dp)
+                        .align(Alignment.CenterHorizontally),
                     onClick = onEditButtonClick
                 ) {
                     Text(stringResource(R.string.save_label))

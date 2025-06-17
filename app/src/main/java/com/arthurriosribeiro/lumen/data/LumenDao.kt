@@ -29,6 +29,9 @@ interface LumenDao {
 
     @Delete
     suspend fun deleteTransaction(userTransaction: UserTransaction)
+
+    @Query("DELETE FROM user_transactions")
+    suspend fun deleteAllUserTransactions()
     //End of the region
 
     //Account configuration user
@@ -52,5 +55,8 @@ interface LumenDao {
 
     @Query("SELECT * FROM account_configuration LIMIT 1")
     suspend fun selectAccountConfiguration() : AccountConfiguration?
+
+    @Query("DELETE FROM account_configuration")
+    suspend fun deleteAllAccountConfiguration()
     //End of the region
 }

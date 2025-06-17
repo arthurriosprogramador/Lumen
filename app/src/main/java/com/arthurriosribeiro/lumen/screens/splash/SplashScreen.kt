@@ -21,6 +21,7 @@ import com.arthurriosribeiro.lumen.navigation.LumenScreens
 import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
 import com.arthurriosribeiro.lumen.utils.animation.shimmerAnimation
 import kotlinx.coroutines.delay
+import java.util.Locale
 
 
 @Composable
@@ -32,36 +33,7 @@ fun SplashScreen(navController: NavController, viewModel: MainViewModel) {
         MaterialTheme.colorScheme.secondary
     )
 
-    val configuration = LocalConfiguration.current
-    val locale = configuration.locales[0]
-
-    val language = when (locale.language) {
-        "en" -> Languages.EN
-        "pt" -> Languages.PT
-        "es" -> Languages.ES
-        else -> Languages.EN
-    }
-
-    val currency = when (locale.country) {
-        "US" -> Currencies.USD
-        "BR" -> Currencies.BRL
-        "ES", "PT" -> Currencies.EUR
-        else -> Currencies.USD
-    }
-
-    val userName = stringResource(R.string.user_logged_off)
-
     LaunchedEffect(Unit) {
-        val config = viewModel.getAccountConfig()
-
-        if (config == null) {
-            viewModel.createAccountConfig(
-                name = userName,
-                selectedLanguage = language,
-                selectedCurrency = currency
-            )
-        }
-
         delay(1800)
         navController.navigate(LumenScreens.HOME_SCREEN.name) {
             popUpTo(LumenScreens.SPLASH_SCREEN.name) { inclusive = true }

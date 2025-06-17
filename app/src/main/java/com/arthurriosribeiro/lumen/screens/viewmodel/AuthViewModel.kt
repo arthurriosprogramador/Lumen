@@ -9,8 +9,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.arthurriosribeiro.lumen.R
 import com.arthurriosribeiro.lumen.model.AccountConfiguration
+import com.arthurriosribeiro.lumen.model.Currencies
+import com.arthurriosribeiro.lumen.model.Languages
 import com.arthurriosribeiro.lumen.model.SignInState
 import com.arthurriosribeiro.lumen.repository.LumenRepository
+import com.arthurriosribeiro.lumen.utils.FirestoreCollectionUtils
 import com.google.android.gms.tasks.Task
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
@@ -145,6 +148,11 @@ class AuthViewModel @Inject constructor(
                         id = accountConfiguration.id,
                         isUserLoggedIn = true
                     )
+                    getUserInformation(
+                        email = email,
+                        accountConfiguration = accountConfiguration,
+                        context = context
+                    )
                 }
             } else {
                 val exceptionMessage = task.exception?.message
@@ -172,18 +180,20 @@ class AuthViewModel @Inject constructor(
         name: String? = null,
         accountConfiguration: AccountConfiguration
     ): Task<QuerySnapshot> {
-        return firestore.collection(USERS_COLLECTION)
-            .whereEqualTo(USER_EMAIL, firebaseAuth.currentUser?.email).get()
+        return firestore.collection(FirestoreCollectionUtils.USERS_COLLECTION)
+            .whereEqualTo(FirestoreCollectionUtils.USER_EMAIL, firebaseAuth.currentUser?.email)
+            .get()
             .addOnCompleteListener { queryTask ->
                 if (queryTask.isSuccessful && queryTask.result.isEmpty) {
                     val userData = hashMapOf(
-                        USER_EMAIL to firebaseAuth.currentUser?.email,
-                        USER_NAME to name,
-                        USER_SELECTED_LANGUAGE to accountConfiguration.selectedLanguage,
-                        USER_SELECTED_CURRENCY to accountConfiguration.selectedCurrency
+                        FirestoreCollectionUtils.USER_EMAIL to firebaseAuth.currentUser?.email,
+                        FirestoreCollectionUtils.USER_NAME to name,
+                        FirestoreCollectionUtils.USER_SELECTED_LANGUAGE to accountConfiguration.selectedLanguage,
+                        FirestoreCollectionUtils.USER_SELECTED_CURRENCY to accountConfiguration.selectedCurrency
                     )
 
-                    firestore.collection(USERS_COLLECTION).document().set(userData)
+                    firestore.collection(FirestoreCollectionUtils.USERS_COLLECTION).document()
+                        .set(userData)
                         .addOnCompleteListener { task ->
                             if (task.isSuccessful) {
                                 viewModelScope.launch {
@@ -213,15 +223,90 @@ class AuthViewModel @Inject constructor(
             }
     }
 
-    fun cleanSignInState() {
-        _signInState.value = null
+    private fun getUserInformation(
+        email: String,
+        accountConfiguration: AccountConfiguration,
+        context: Context
+    ) {
+        firestore.collection(FirestoreCollectionUtils.USERS_COLLECTION)
+            .whereEqualTo(FirestoreCollectionUtils.USER_EMAIL, email).get()
+            .addOnSuccessListener { snapshot ->
+                if (!snapshot.isEmpty) {
+                    val document = snapshot.documents.first()
+                    viewModelScope.launch {
+                        lumenRepository.updateUserName(
+                            document.getString(FirestoreCollectionUtils.USER_NAME)
+                                ?: context.getString(R.string.user_logged_off),
+                            accountConfiguration.id
+                        )
+                        lumenRepository.updateUserLanguage(
+                            document.getString(
+                                FirestoreCollectionUtils.USER_SELECTED_LANGUAGE
+                            ) ?: Languages.EN.name, accountConfiguration.id
+                        )
+                        lumenRepository.updateUserCurrency(
+                            document.getString(
+                                FirestoreCollectionUtils.USER_SELECTED_CURRENCY
+                            ) ?: Currencies.USD.name, accountConfiguration.id
+                        )
+                    }
+                }
+            }
     }
 
-    companion object {
-        private const val USERS_COLLECTION = "users"
-        private const val USER_EMAIL = "email"
-        private const val USER_NAME = "name"
-        private const val USER_SELECTED_LANGUAGE = "selected_language"
-        private const val USER_SELECTED_CURRENCY = "selected_currency"
+    fun deleteAllUserData(context: Context, accountConfiguration: AccountConfiguration) {
+        val currentUser = firebaseAuth.currentUser
+        _signInState.value = SignInState.Loading
+        firestore.collection(FirestoreCollectionUtils.USERS_COLLECTION)
+            .whereEqualTo(FirestoreCollectionUtils.USER_EMAIL, currentUser?.email)
+            .get()
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val snapshot = task.result
+
+                    if (!snapshot.isEmpty) {
+                        val document = snapshot.documents.first()
+                        document.reference.delete()
+                    }
+
+                    viewModelScope.launch {
+                        val language = accountConfiguration.selectedLanguage
+                        val currency = accountConfiguration.selectedCurrency
+                        lumenRepository.deleteAllTransactions()
+                        lumenRepository.deleteAllAccountConfiguration()
+                        lumenRepository.insertAccountConfiguration(
+                            AccountConfiguration(id = 0,
+                                name = context.getString(R.string.user_logged_off),
+                                selectedLanguage = language,
+                                selectedCurrency = currency
+                            )
+                        )
+                    }
+
+                    currentUser?.delete()?.addOnCompleteListener { deleteUserTask ->
+                        if (deleteUserTask.isSuccessful) {
+                            _signInState.value = SignInState.SignedOut
+                        } else {
+                            val deleteUserTaskExceptionMessage = deleteUserTask.exception?.message
+                            if (!deleteUserTaskExceptionMessage.isNullOrBlank()){
+                                _signInState.value = SignInState.Error(deleteUserTaskExceptionMessage)
+                            } else {
+                                _signInState.value = SignInState.Error(context.getString(R.string.default_error))
+                            }
+                        }
+                    }
+                } else {
+                    val taskExceptionMessage = task.exception?.message
+                    if (!taskExceptionMessage.isNullOrBlank()) {
+                        _signInState.value = SignInState.Error(taskExceptionMessage)
+                    } else {
+                        _signInState.value = SignInState.Error(context.getString(R.string.default_error))
+                    }
+                }
+            }
+    }
+
+    fun cleanSignInState() {
+        _signInState.value = null
     }
 }

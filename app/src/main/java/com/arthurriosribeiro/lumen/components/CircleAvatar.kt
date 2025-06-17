@@ -24,12 +24,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.arthurriosribeiro.lumen.R
 import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
+import com.arthurriosribeiro.lumen.utils.LocalActivity
 import java.io.File
 
 
@@ -39,15 +39,15 @@ fun CircleAvatar(
     viewModel: MainViewModel
 ) {
     val accountConfig = viewModel.accountConfig.value
-    val context = LocalContext.current
     var imagePath by remember { mutableStateOf(accountConfig?.userImage) }
 
+    val activity = LocalActivity.current
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri ->
             uri?.let {
-                val savedPath = viewModel.copyUriToInternalStorage(context, it)
+                val savedPath = viewModel.copyUriToInternalStorage(activity, it)
                 savedPath?.let { path ->
                     accountConfig?.id?.let { id ->
                         viewModel.updateUserImage(path, id)
@@ -58,12 +58,15 @@ fun CircleAvatar(
         }
     )
 
+
     Box(
         modifier = modifier
             .size(64.dp)
             .clip(CircleShape)
             .background(Color.LightGray)
-            .clickable { launcher.launch("image/*") },
+            .clickable {
+                launcher.launch("image/*")
+            },
         contentAlignment = Alignment.Center
     ) {
         val file = imagePath?.let { File(it) }
