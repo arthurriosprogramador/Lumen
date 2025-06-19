@@ -18,7 +18,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.arthurriosribeiro.lumen.model.Languages
+import com.arthurriosribeiro.lumen.model.TransactionType
 import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
+import java.util.Locale
 
 @Composable
 fun <T>LumenRadioButton(
@@ -50,7 +52,49 @@ fun <T>LumenRadioButton(
                             onClick = null
                         )
                         Text(
-                            text = if (it is Languages) stringResource(viewModel?.getLanguageLabel(it.name) ?: 0) else it as String,
+                            text = if (it is Languages) {
+                                stringResource(viewModel?.getLanguageLabel(it.name) ?: 0)
+                            } else if(it is TransactionType) {
+                                it.name.lowercase().replaceFirstChar { char -> char.uppercaseChar() }
+                            } else {
+                                it as String
+                            },
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(start = 16.dp)
+                        )
+                    }
+                }
+            }
+        }
+    } else {
+        Row(
+            modifier = modifier.selectableGroup()
+        ) {
+            if (!options.isNullOrEmpty()) {
+                options.forEach {
+                    Row(
+                        modifier = Modifier
+                            .padding(top = 16.dp)
+                            .selectable(
+                                selected = it == selectedOption,
+                                onClick = { onOptionSelected(it) },
+                                role = Role.RadioButton
+                            )
+                            .padding(horizontal = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = (it == selectedOption),
+                            onClick = null
+                        )
+                        Text(
+                            text = if (it is Languages) {
+                                stringResource(viewModel?.getLanguageLabel(it.name) ?: 0)
+                            } else if(it is TransactionType) {
+                                it.name.lowercase().replaceFirstChar { char -> char.uppercaseChar() }
+                            } else {
+                                it as String
+                            },
                             style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier.padding(start = 16.dp)
                         )

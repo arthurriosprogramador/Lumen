@@ -1,40 +1,44 @@
 package com.arthurriosribeiro.lumen.screens.home
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
-import androidx.navigation.compose.currentBackStackEntryAsState
+import com.arthurriosribeiro.lumen.R
 import com.arthurriosribeiro.lumen.components.LumenBottomNavigationBar
 import com.arthurriosribeiro.lumen.navigation.LumenScreens
-import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
-import com.arthurriosribeiro.lumen.screens.home.tabs.AddTransactionTabScreen
 import com.arthurriosribeiro.lumen.screens.home.tabs.FinanceTrackTabScreen
+import com.arthurriosribeiro.lumen.screens.home.tabs.TransactionsTabScreen
 import com.arthurriosribeiro.lumen.screens.home.tabs.UserConfigurationScreen
 import com.arthurriosribeiro.lumen.screens.viewmodel.AuthViewModel
-import androidx.lifecycle.compose.currentStateAsState
+import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(navController: NavController, viewModel: MainViewModel, authViewModel: AuthViewModel) {
     val bottomNavigationItems = listOf(
-        LumenScreens.FINANCE_SCREEN,
-        LumenScreens.ADD_TRANSACTION_SCREEN,
+        LumenScreens.OVERVIEW_SCREEN,
+        LumenScreens.TRANSACTIONS_SCREEN,
         LumenScreens.USER_CONFIGURATION_SCREEN
     )
     val pagerState = rememberPagerState(
@@ -46,9 +50,6 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel, authViewM
     val navBackStackEntry by remember(navController) {
         derivedStateOf { navController.getBackStackEntry(LumenScreens.HOME_SCREEN.name) }
     }
-
-
-    val lifecycle = navBackStackEntry.lifecycle
 
     DisposableEffect(navBackStackEntry) {
         val observer = LifecycleEventObserver { _, event ->
@@ -66,6 +67,23 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel, authViewM
 
     Scaffold(
         modifier = Modifier.padding(WindowInsets.navigationBars.asPaddingValues()),
+        floatingActionButton = {
+            AnimatedVisibility(
+                visible = pagerState.currentPage != bottomNavigationItems.lastIndex
+            ) {
+                FloatingActionButton(
+                    shape = CircleShape,
+                    onClick = {
+                        navController.navigate(LumenScreens.ADD_TRANSACTIONS_SCREEN.name)
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Add,
+                        contentDescription = stringResource(R.string.home_add_icon_description)
+                    )
+                }
+            }
+        },
         bottomBar = { LumenBottomNavigationBar(navController, bottomNavigationItems, pagerState) }) { innerPadding ->
         HorizontalPager(
             modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
@@ -74,7 +92,7 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel, authViewM
         ) {
             when (it) {
                 0 -> FinanceTrackTabScreen(viewModel)
-                1 -> AddTransactionTabScreen()
+                1 -> TransactionsTabScreen()
                 2 -> UserConfigurationScreen(navController, viewModel, authViewModel)
             }
         }

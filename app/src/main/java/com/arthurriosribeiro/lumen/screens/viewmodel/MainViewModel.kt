@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -156,4 +157,22 @@ class MainViewModel @Inject constructor(
             Languages.ES -> R.string.user_configuration_spanish_language
         }
     }
-}
+
+    fun getPrefixByCurrency(currency: String): String {
+        return when(currency) {
+            Currencies.USD.name -> "$"
+            Currencies.BRL.name -> "R$"
+            Currencies.EUR.name -> "€"
+            else -> ""
+        }
+    }
+
+    fun getLocaleByCurrency(currency: String) : Locale {
+        return when(currency) {
+            Currencies.USD.name -> Locale.US
+            Currencies.BRL.name -> Locale("pt", "BR")
+            Currencies.EUR.name -> Locale.FRANCE
+            else -> Locale.US
+        }
+    }
+ }

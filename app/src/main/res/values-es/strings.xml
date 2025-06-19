@@ -21,12 +21,23 @@
 
     <string name="default_error">Algo salió mal. Intentalo de nuevo má tarde.</string>
 
+    <!--  Transaction Categories  -->
+    <string name="credit_card_label">Tarjeta de crédito</string>
+    <string name="food_label">Alimento</string>
+    <string name="clothing_label">Ropa</string>
+    <string name="shopping_label">Compras</string>
+    <string name="bills_label">Facturas</string>
+    <string name="beauty_and_self_care_label">Belleza y cuidado personal</string>
+    <string name="paycheck_label">Cheque de pago</string>
+    <string name="other_expenses_label">Otros gastos</string>
+    <string name="other_incomes_label">Otros ingresos</string>
+
     <!--  Splash Screen Strings  -->
     <string name="splash_icon_description">Icono de lámpara</string>
 
     <!--  Home Screen Strings  -->
     <string name="home_add_icon_description">Icono de añadir</string>
-    <string name="home_empty_info_message">Por favor, añade su primera transacción para empezar a rastrear sus finanzas.</string>
+    <string name="home_empty_info_message">Por favor, agregue su primera transacción para empezar a rastrear sus finanzas.</string>
 
     <!--  User Configuration Screen  -->
     <string name="user_configuration_add_photo">Añadir foto</string>
@@ -61,4 +72,13 @@
 
     <!--  Log In Screen  -->
     <string name="log_in_title">Bienvenido de nuevo. ¡Qué bueno verte nuevamente!</string>
+
+    <!--  Add Transactions Screen  -->
+    <string name="add_transactions_title">Agregar transacción</string>
+    <string name="add_transactions_transaction_label">Transacción</string>
+    <string name="add_transactions_transaction_description">Descripción de la transacción</string>
+    <string name="add_transactions_open_category_menu">Abrir menú de categorías</string>
+    <string name="add_transactions_close_category_menu">Cerrar menú de categorías</string>
+    <string name="add_transactions_transaction_value_label">Valor de la transacción</string>
+    <string name="add_transactions_empty_field_error">El campo no puede estar vacío</string>
 </resources>

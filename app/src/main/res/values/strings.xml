@@ -20,6 +20,17 @@
 
     <string name="default_error">Something went wrong. Please, try again later.</string>
 
+    <!--  Transaction Categories  -->
+    <string name="credit_card_label">Credit card</string>
+    <string name="food_label">Food</string>
+    <string name="clothing_label">Clothing</string>
+    <string name="shopping_label">Shopping</string>
+    <string name="bills_label">Bills</string>
+    <string name="beauty_and_self_care_label">Beauty and self care</string>
+    <string name="paycheck_label">Paycheck</string>
+    <string name="other_expenses_label">Other expenses</string>
+    <string name="other_incomes_label">Other incomes</string>
+
     <!--  Splash Screen Strings  -->
     <string name="splash_icon_description">Lightbulb icon</string>
 
@@ -60,4 +71,13 @@
 
     <!--  Log In Screen  -->
     <string name="log_in_title">Welcome back. It\'s great to see you again!</string>
+
+    <!--  Add Transactions Screen  -->
+    <string name="add_transactions_title">Add transaction</string>
+    <string name="add_transactions_transaction_label">Transaction</string>
+    <string name="add_transactions_transaction_description">Transaction description</string>
+    <string name="add_transactions_open_category_menu">Open category menu</string>
+    <string name="add_transactions_close_category_menu">Close category menu</string>
+    <string name="add_transactions_transaction_value_label">Transaction value</string>
+    <string name="add_transactions_empty_field_error">Field cannot be empty</string>
 </resources>

@@ -21,6 +21,17 @@
 
     <string name="default_error">Algo deu errado. Tente novamente mais tarde.</string>
 
+    <!--  Transaction Categories  -->
+    <string name="credit_card_label">Cartão de crédito</string>
+    <string name="food_label">Comida</string>
+    <string name="clothing_label">Roupas</string>
+    <string name="shopping_label">Compras</string>
+    <string name="bills_label">Contas</string>
+    <string name="beauty_and_self_care_label">Beleza e cuidados pessoais</string>
+    <string name="paycheck_label">Salário</string>
+    <string name="other_expenses_label">Outros gastos</string>
+    <string name="other_incomes_label">Outras rendas</string>
+
     <!--  Splash Screen Strings  -->
     <string name="splash_icon_description">Ícone de lâmpada</string>
 
@@ -61,4 +72,13 @@
 
     <!--  Log In Screen  -->
     <string name="log_in_title">Bem-vindo de volta. Que bom ver você novamente!</string>
+
+    <!--  Add Transactions Screen  -->
+    <string name="add_transactions_title">Adicionar transação</string>
+    <string name="add_transactions_transaction_label">Transação</string>
+    <string name="add_transactions_transaction_description">Descrição da transação</string>
+    <string name="add_transactions_open_category_menu">Abrir menu de categorias</string>
+    <string name="add_transactions_close_category_menu">Fechar menu de categorias</string>
+    <string name="add_transactions_transaction_value_label">Valor da transação</string>
+    <string name="add_transactions_empty_field_error">O campo não pode estar vazio</string>
 </resources>

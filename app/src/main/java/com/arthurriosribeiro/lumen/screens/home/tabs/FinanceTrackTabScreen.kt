@@ -27,20 +27,5 @@ fun FinanceTrackTabScreen(viewModel: MainViewModel) {
             style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier.padding(24.dp)
         )
-        Text(
-            viewModel.accountConfig.value?.name.orEmpty(),
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(24.dp)
-        )
-        Text(
-            viewModel.accountConfig.value?.selectedLanguage.orEmpty(),
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(24.dp)
-        )
-        Text(
-            viewModel.accountConfig.value?.selectedCurrency.orEmpty(),
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(24.dp)
-        )
     }
 }

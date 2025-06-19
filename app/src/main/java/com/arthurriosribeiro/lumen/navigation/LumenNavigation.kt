@@ -3,6 +3,7 @@ package com.arthurriosribeiro.lumen.navigation
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
@@ -19,6 +20,7 @@ import androidx.navigation.compose.rememberNavController
 import com.arthurriosribeiro.lumen.R
 import com.arthurriosribeiro.lumen.model.Currencies
 import com.arthurriosribeiro.lumen.model.Languages
+import com.arthurriosribeiro.lumen.screens.addtransaction.AddTransactionsScreen
 import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
 import com.arthurriosribeiro.lumen.screens.home.HomeScreen
 import com.arthurriosribeiro.lumen.screens.home.tabs.UserConfigurationScreen
@@ -76,6 +78,27 @@ fun LumenNavigation() {
 
     val activity = (context as ComponentActivity)
 
+    val defaultEnterTransition = slideInHorizontally(
+            initialOffsetX = { it },
+            animationSpec = tween(durationMillis = 1000)
+        )
+
+    val defaultExitTransition = slideOutVertically(
+            targetOffsetY = { it },
+            animationSpec = tween(durationMillis = 1000)
+        )
+
+    val verticalEnterTransition = slideInVertically(
+            initialOffsetY = { it },
+            animationSpec = tween(durationMillis = 1000)
+        )
+
+    val verticalExitTransition = slideOutVertically(
+            targetOffsetY = { it },
+            animationSpec = tween(durationMillis = 1000)
+        )
+
+
     CompositionLocalProvider(
         LocalContext provides updatedContext,
         LocalActivity provides activity,
@@ -92,38 +115,26 @@ fun LumenNavigation() {
 
             composable(
                 LumenScreens.SIGN_UP_SCREEN.name,
-                enterTransition = {
-                    slideInVertically(
-                        initialOffsetY = { it },
-                        animationSpec = tween(durationMillis = 1000)
-                    )
-                },
-                exitTransition = {
-                    slideOutVertically(
-                        targetOffsetY = { it },
-                        animationSpec = tween(durationMillis = 1000)
-                    )
-                }
+                enterTransition = { verticalEnterTransition },
+                exitTransition = { verticalExitTransition }
             ) {
                 SignUpScreen(navController, authViewModel, mainViewModel.accountConfig)
             }
 
             composable(
                 LumenScreens.LOG_IN_SCREEN.name,
-                enterTransition = {
-                    slideInVertically(
-                        initialOffsetY = { it },
-                        animationSpec = tween(durationMillis = 1000)
-                    )
-                },
-                exitTransition = {
-                    slideOutVertically(
-                        targetOffsetY = { it },
-                        animationSpec = tween(durationMillis = 1000)
-                    )
-                }
+                enterTransition = { verticalEnterTransition },
+                exitTransition = { verticalExitTransition }
             ) {
                 LogInScreen(navController, authViewModel, mainViewModel.accountConfig)
+            }
+
+            composable(
+                LumenScreens.ADD_TRANSACTIONS_SCREEN.name,
+                enterTransition = { verticalEnterTransition },
+                exitTransition = { verticalExitTransition }
+            ) {
+                AddTransactionsScreen(navController, mainViewModel)
             }
         }
     }

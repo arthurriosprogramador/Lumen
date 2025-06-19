@@ -1,6 +1,7 @@
 package com.arthurriosribeiro.lumen.model
 
 import android.os.Parcelable
+import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AttachMoney
 import androidx.compose.material.icons.rounded.Checkroom
@@ -13,6 +14,7 @@ import androidx.compose.material.icons.rounded.Spa
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.arthurriosribeiro.lumen.R
 import kotlinx.parcelize.Parcelize
 import javax.annotation.Nonnull
 
@@ -37,20 +39,14 @@ enum class TransactionType {
     INCOME
 }
 
-@Parcelize
-data class TransactionCategory(
-    val name: String,
-    val icon: TransactionCategoryIcons
-) : Parcelable
-
-enum class TransactionCategoryIcons(val icon: ImageVector, val label: String) {
-    CREDIT_CARD(Icons.Rounded.Payment, "Credit card"),
-    FOOD(Icons.Rounded.Fastfood, "Food"),
-    CLOTHING(Icons.Rounded.Checkroom, "Clothing"),
-    SHOPPING(Icons.Rounded.ShoppingCart, "Shopping"),
-    BILLS(Icons.Rounded.RequestPage, "Bills"),
-    BEAUTY(Icons.Rounded.Spa, "Beauty and self care"),
-    PAYCHECK(Icons.Rounded.AttachMoney, "Paycheck"),
-    OTHER_EXPENSE(Icons.Rounded.MoneyOff, "Other expenses"),
-    OTHER_INCOME(Icons.Rounded.AttachMoney, "Other Incomes")
+enum class TransactionCategory(val icon: ImageVector, @StringRes val label: Int) {
+    CREDIT_CARD(Icons.Rounded.Payment, R.string.credit_card_label),
+    FOOD(Icons.Rounded.Fastfood, R.string.food_label),
+    CLOTHING(Icons.Rounded.Checkroom, R.string.clothing_label),
+    SHOPPING(Icons.Rounded.ShoppingCart, R.string.shopping_label),
+    BILLS(Icons.Rounded.RequestPage, R.string.bills_label),
+    BEAUTY(Icons.Rounded.Spa, R.string.beauty_and_self_care_label),
+    PAYCHECK(Icons.Rounded.AttachMoney, R.string.paycheck_label),
+    OTHER_EXPENSE(Icons.Rounded.MoneyOff, R.string.other_expenses_label),
+    OTHER_INCOME(Icons.Rounded.AttachMoney, R.string.other_incomes_label)
 }
