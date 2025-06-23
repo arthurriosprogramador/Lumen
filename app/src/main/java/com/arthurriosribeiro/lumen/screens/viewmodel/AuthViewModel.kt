@@ -11,7 +11,7 @@ import com.arthurriosribeiro.lumen.R
 import com.arthurriosribeiro.lumen.model.AccountConfiguration
 import com.arthurriosribeiro.lumen.model.Currencies
 import com.arthurriosribeiro.lumen.model.Languages
-import com.arthurriosribeiro.lumen.model.SignInState
+import com.arthurriosribeiro.lumen.model.RequestState
 import com.arthurriosribeiro.lumen.repository.LumenRepository
 import com.arthurriosribeiro.lumen.utils.FirestoreCollectionUtils
 import com.google.android.gms.tasks.Task
@@ -35,9 +35,9 @@ class AuthViewModel @Inject constructor(
     private val lumenRepository: LumenRepository
 ) : ViewModel() {
 
-    private val _signInState: MutableStateFlow<SignInState?> =
+    private val _signInState: MutableStateFlow<RequestState<Unit>?> =
         MutableStateFlow(null)
-    val signInState: StateFlow<SignInState?> = _signInState
+    val signInState: StateFlow<RequestState<Unit>?> = _signInState
 
     fun isValidEmail(email: String): Boolean {
         val regex =
@@ -63,13 +63,13 @@ class AuthViewModel @Inject constructor(
             .addCredentialOption(googleIdOption)
             .build()
         try {
-            _signInState.value = SignInState.Loading
+            _signInState.value = RequestState.Loading
 
             val response = credentialManager.getCredential(context = context, request = request)
             handleSignInResponse(response, accountConfiguration)
         } catch (e: Exception) {
             _signInState.value =
-                SignInState.Error(e.message ?: context.getString(R.string.default_error))
+                RequestState.Error(e.message ?: context.getString(R.string.default_error))
         }
     }
 
@@ -89,7 +89,7 @@ class AuthViewModel @Inject constructor(
                         (firebaseAuth.currentUser?.displayName ?: accountConfiguration.name),
                         accountConfiguration
                     )
-                    _signInState.value = SignInState.Success
+                    _signInState.value = RequestState.Success(Unit)
                 }
             }
 
@@ -106,7 +106,7 @@ class AuthViewModel @Inject constructor(
         context: Context,
         accountConfiguration: AccountConfiguration
     ) {
-        _signInState.value = SignInState.Loading
+        _signInState.value = RequestState.Loading
         firebaseAuth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
@@ -125,9 +125,9 @@ class AuthViewModel @Inject constructor(
                     val exceptionMessage = task.exception?.message
                     if (exceptionMessage.isNullOrBlank()) {
                         _signInState.value =
-                            SignInState.Error(context.getString(R.string.default_error))
+                            RequestState.Error(context.getString(R.string.default_error))
                     } else {
-                        _signInState.value = SignInState.Error(exceptionMessage)
+                        _signInState.value = RequestState.Error(exceptionMessage)
                     }
                 }
             }
@@ -139,10 +139,10 @@ class AuthViewModel @Inject constructor(
         context: Context,
         accountConfiguration: AccountConfiguration
     ) {
-        _signInState.value = SignInState.Loading
+        _signInState.value = RequestState.Loading
         firebaseAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                _signInState.value = SignInState.Success
+                _signInState.value = RequestState.Success(Unit)
                 viewModelScope.launch {
                     lumenRepository.updateUserLoggedIn(
                         id = accountConfiguration.id,
@@ -158,22 +158,22 @@ class AuthViewModel @Inject constructor(
                 val exceptionMessage = task.exception?.message
                 if (exceptionMessage.isNullOrBlank()) {
                     _signInState.value =
-                        SignInState.Error(context.getString(R.string.default_error))
+                        RequestState.Error(context.getString(R.string.default_error))
                 } else {
-                    _signInState.value = SignInState.Error(exceptionMessage)
+                    _signInState.value = RequestState.Error(exceptionMessage)
                 }
             }
         }
     }
 
     suspend fun signOut(accountConfiguration: AccountConfiguration) {
-        _signInState.value = SignInState.Loading
+        _signInState.value = RequestState.Loading
         firebaseAuth.signOut()
         lumenRepository.updateUserLoggedIn(
             isUserLoggedIn = false,
             id = accountConfiguration.id
         )
-        _signInState.value = SignInState.SignedOut
+        _signInState.value = RequestState.SignedOut
     }
 
     private fun sendUserInformationToFirestore(
@@ -185,7 +185,8 @@ class AuthViewModel @Inject constructor(
             .get()
             .addOnCompleteListener { queryTask ->
                 if (queryTask.isSuccessful && queryTask.result.isEmpty) {
-                    val userData = hashMapOf(
+                    val userData = mapOf(
+                        FirestoreCollectionUtils.USER_ID to firebaseAuth.currentUser?.uid,
                         FirestoreCollectionUtils.USER_EMAIL to firebaseAuth.currentUser?.email,
                         FirestoreCollectionUtils.USER_NAME to name,
                         FirestoreCollectionUtils.USER_SELECTED_LANGUAGE to accountConfiguration.selectedLanguage,
@@ -256,7 +257,7 @@ class AuthViewModel @Inject constructor(
 
     fun deleteAllUserData(context: Context, accountConfiguration: AccountConfiguration) {
         val currentUser = firebaseAuth.currentUser
-        _signInState.value = SignInState.Loading
+        _signInState.value = RequestState.Loading
         firestore.collection(FirestoreCollectionUtils.USERS_COLLECTION)
             .whereEqualTo(FirestoreCollectionUtils.USER_EMAIL, currentUser?.email)
             .get()
@@ -285,22 +286,22 @@ class AuthViewModel @Inject constructor(
 
                     currentUser?.delete()?.addOnCompleteListener { deleteUserTask ->
                         if (deleteUserTask.isSuccessful) {
-                            _signInState.value = SignInState.SignedOut
+                            _signInState.value = RequestState.SignedOut
                         } else {
                             val deleteUserTaskExceptionMessage = deleteUserTask.exception?.message
                             if (!deleteUserTaskExceptionMessage.isNullOrBlank()){
-                                _signInState.value = SignInState.Error(deleteUserTaskExceptionMessage)
+                                _signInState.value = RequestState.Error(deleteUserTaskExceptionMessage)
                             } else {
-                                _signInState.value = SignInState.Error(context.getString(R.string.default_error))
+                                _signInState.value = RequestState.Error(context.getString(R.string.default_error))
                             }
                         }
                     }
                 } else {
                     val taskExceptionMessage = task.exception?.message
                     if (!taskExceptionMessage.isNullOrBlank()) {
-                        _signInState.value = SignInState.Error(taskExceptionMessage)
+                        _signInState.value = RequestState.Error(taskExceptionMessage)
                     } else {
-                        _signInState.value = SignInState.Error(context.getString(R.string.default_error))
+                        _signInState.value = RequestState.Error(context.getString(R.string.default_error))
                     }
                 }
             }

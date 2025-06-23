@@ -21,6 +21,8 @@
 
     <string name="default_error">Algo salió mal. Intentalo de nuevo má tarde.</string>
 
+    <string name="lost_connection_message">Has perdido la conexión. Pero no te preocupes - tus datos se guardarán localmente y se sincronizarán con el servidor en cuanto vuelvas a estar en línea.</string>
+
     <!--  Transaction Categories  -->
     <string name="credit_card_label">Tarjeta de crédito</string>
     <string name="food_label">Alimento</string>
@@ -53,8 +55,8 @@
     <string name="user_configuration_exclude_account">Excluir cuenta y eliminar datos</string>
     <string name="user_configuration_exclude_account_modal_title">¿Eliminar cuenta?</string>
     <string name="user_configuration_exclude_account_modal_message">Esta acción es permanente y no se puede deshacer. Todos tus datos serán permanentemente borrados. ¿Estás seguro que vas a proceder?</string>
-    <string name="user_configuration_exclude_account_modal_confirm_button">Confirmar</string>
-    <string name="user_configuration_exclude_account_modal_cancel_button">Cancelar</string>
+    <string name="confirm_button_label">Confirmar</string>
+    <string name="cancel_button_label">Cancelar</string>
 
     <!--  Sign Up Screen  -->
     <string name="sign_up_title_instructions">Por favor, rellene todos los campos del formulário para registrarse.</string>
@@ -80,5 +82,7 @@
     <string name="add_transactions_open_category_menu">Abrir menú de categorías</string>
     <string name="add_transactions_close_category_menu">Cerrar menú de categorías</string>
     <string name="add_transactions_transaction_value_label">Valor de la transacción</string>
+    <string name="add_transactions_transaction_select_date_label">Seleccione una fecha</string>
+    <string name="add_transactions_transaction_selected_date_label">Fecha seleccionada: %s</string>
     <string name="add_transactions_empty_field_error">El campo no puede estar vacío</string>
 </resources>

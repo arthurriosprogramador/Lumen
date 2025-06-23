@@ -24,7 +24,7 @@ import javax.annotation.Nonnull
 data class UserTransaction(
     @Nonnull
     @PrimaryKey(autoGenerate = true)
-    val id: Int,
+    val id: Int = 0,
     val firebaseId: String? = null,
     val title: String? = null,
     val description: String? = null,

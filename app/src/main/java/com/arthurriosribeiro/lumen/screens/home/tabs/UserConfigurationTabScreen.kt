@@ -1,6 +1,5 @@
 package com.arthurriosribeiro.lumen.screens.home.tabs
 
-import android.app.Activity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,8 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ChevronRight
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -32,7 +29,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -49,13 +45,12 @@ import com.arthurriosribeiro.lumen.components.LumenRadioButton
 import com.arthurriosribeiro.lumen.components.LumenTextField
 import com.arthurriosribeiro.lumen.model.Currencies
 import com.arthurriosribeiro.lumen.model.Languages
-import com.arthurriosribeiro.lumen.model.SignInState
+import com.arthurriosribeiro.lumen.model.RequestState
 import com.arthurriosribeiro.lumen.navigation.LumenScreens
 import com.arthurriosribeiro.lumen.screens.viewmodel.AuthViewModel
 import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
 import com.arthurriosribeiro.lumen.utils.animation.orDash
 import kotlinx.coroutines.launch
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -287,15 +282,15 @@ fun UserConfigurationScreen(
         }
         LaunchedEffect(signInState) {
             when (authViewModel.signInState.value) {
-                is SignInState.Loading -> isLoading = true
-                is SignInState.Success -> {
+                is RequestState.Loading -> isLoading = true
+                is RequestState.Success -> {
                     isLoading = false
                 }
-                is SignInState.Error -> {
+                is RequestState.Error -> {
                     isLoading = false
                     coroutineScope.launch {
                         snackBarHostState.showSnackbar(
-                            message = (signInState as SignInState.Error).message
+                            message = (signInState as RequestState.Error).message
                         )
                     }
                 }
@@ -313,7 +308,7 @@ fun UserConfigurationScreen(
                 onDismissRequest = { isShowingExcludeAccountAlert = false },
                 title = stringResource(R.string.user_configuration_exclude_account_modal_title),
                 message = stringResource(R.string.user_configuration_exclude_account_modal_message),
-                confirmButtonLabel = stringResource(R.string.user_configuration_exclude_account_modal_confirm_button),
+                confirmButtonLabel = stringResource(R.string.confirm_button_label),
                 onClickConfirmButton = {
                     viewModel.accountConfig.value?.let { config ->
                         authViewModel.deleteAllUserData(
@@ -323,7 +318,7 @@ fun UserConfigurationScreen(
                     }
                     isShowingExcludeAccountAlert = false
                 },
-                cancelButtonLabel = stringResource(R.string.user_configuration_exclude_account_modal_cancel_button),
+                cancelButtonLabel = stringResource(R.string.cancel_button_label),
                 onClickCancelButton = {
                     isShowingExcludeAccountAlert = false
                 }

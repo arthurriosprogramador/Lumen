@@ -11,11 +11,15 @@ import com.arthurriosribeiro.lumen.R
 import com.arthurriosribeiro.lumen.model.AccountConfiguration
 import com.arthurriosribeiro.lumen.model.Currencies
 import com.arthurriosribeiro.lumen.model.Languages
+import com.arthurriosribeiro.lumen.model.RequestState
+import com.arthurriosribeiro.lumen.model.UserTransaction
 import com.arthurriosribeiro.lumen.repository.LumenRepository
 import com.arthurriosribeiro.lumen.utils.FirestoreCollectionUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
@@ -33,6 +37,12 @@ class MainViewModel @Inject constructor(
 
     private val _accountConfig: MutableState<AccountConfiguration?> = mutableStateOf(null)
     val accountConfig: State<AccountConfiguration?> = _accountConfig
+
+    private val _addTransactionState: MutableStateFlow<RequestState<Unit>?> = MutableStateFlow(null)
+    val addTransactionState: StateFlow<RequestState<Unit>?> = _addTransactionState
+
+    private val _transactions: MutableStateFlow<RequestState<List<UserTransaction>>?> = MutableStateFlow(null)
+    val transactions: StateFlow<RequestState<List<UserTransaction>>?> = _transactions
 
     suspend fun getAccountConfig() : AccountConfiguration?{
             val config = runCatching {
@@ -133,6 +143,35 @@ class MainViewModel @Inject constructor(
             }
     }
 
+    fun addTransactionOnFirestore(transaction: UserTransaction, context: Context) {
+        _addTransactionState.value = RequestState.Loading
+        firestore.collection(FirestoreCollectionUtils.TRANSACTIONS_COLLECTION)
+            .add(
+                mapOf(
+                    FirestoreCollectionUtils.TRANSACTION_TITLE to transaction.title,
+                    FirestoreCollectionUtils.TRANSACTION_DESCRIPTION to transaction.description,
+                    FirestoreCollectionUtils.TRANSACTION_VALUE to transaction.value,
+                    FirestoreCollectionUtils.TRANSACTION_TIMESTAMP to transaction.timestamp,
+                    FirestoreCollectionUtils.TRANSACTION_TYPE to transaction.type,
+                    FirestoreCollectionUtils.TRANSACTION_CATEGORY_NAME to transaction.categoryName
+                )
+            ).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    _addTransactionState.value = RequestState.Success(Unit)
+                    viewModelScope.launch {
+                        addTransactionToSql(transaction)
+                    }
+                } else {
+                    val exceptionMessage = task.exception?.message
+                    _addTransactionState.value =
+                        if (!exceptionMessage.isNullOrBlank()) RequestState.Error(exceptionMessage)
+                        else RequestState.Error(context.getString(R.string.default_error))
+                }
+            }
+    }
+
+    suspend fun addTransactionToSql(transaction: UserTransaction) = lumenRepository.insertTransaction(transaction)
+
     fun copyUriToInternalStorage(context: Context, uri: Uri): String? {
         val file = File(context.filesDir, "user_profile.jpg")
         return try {
@@ -172,6 +211,15 @@ class MainViewModel @Inject constructor(
             Currencies.USD.name -> Locale.US
             Currencies.BRL.name -> Locale("pt", "BR")
             Currencies.EUR.name -> Locale.FRANCE
+            else -> Locale.US
+        }
+    }
+
+    fun getLocaleForDateFormat(language: String) : Locale {
+        return when(language) {
+            Languages.EN.name -> Locale.US
+            Languages.PT.name -> Locale("pt", "BR")
+            Languages.ES.name -> Locale.FRANCE
             else -> Locale.US
         }
     }

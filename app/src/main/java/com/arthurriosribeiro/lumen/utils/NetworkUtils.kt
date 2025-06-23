@@ -26,8 +26,15 @@ class NetworkUtils(context: Context) {
                 _isConnected.value = true
             }
 
-            override fun onUnavailable() {
+            override fun onLost(network: Network) {
                 _isConnected.value = hasInternetConnection()
+            }
+
+            override fun onCapabilitiesChanged(
+                network: Network,
+                networkCapabilities: NetworkCapabilities
+            ) {
+                _isConnected.value = networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
             }
         })
     }

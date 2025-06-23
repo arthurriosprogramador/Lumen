@@ -12,19 +12,34 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableLongState
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -35,48 +50,71 @@ import com.arthurriosribeiro.lumen.components.LumenRadioButton
 import com.arthurriosribeiro.lumen.components.LumenTextField
 import com.arthurriosribeiro.lumen.components.LumenTopAppBar
 import com.arthurriosribeiro.lumen.model.Currencies
+import com.arthurriosribeiro.lumen.model.Languages
 import com.arthurriosribeiro.lumen.model.TransactionCategory
 import com.arthurriosribeiro.lumen.model.TransactionType
+import com.arthurriosribeiro.lumen.model.UserTransaction
 import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
+import com.arthurriosribeiro.lumen.utils.NetworkUtils
+import com.arthurriosribeiro.lumen.utils.formatDate
+import kotlinx.coroutines.launch
+import java.text.NumberFormat
+import java.util.Date
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTransactionsScreen(
     navController: NavController,
     viewModel: MainViewModel
 ) {
+    val context = LocalContext.current
+
+    val coroutineScope = rememberCoroutineScope()
+
+    val networkMonitor = remember { NetworkUtils(context) }
+    val isConnected by networkMonitor.isConnected.collectAsState()
+    val lostConnectionMessage = stringResource(R.string.lost_connection_message)
+
+    val snackBarHostState = remember { SnackbarHostState() }
 
     val scrollState = rememberScrollState()
 
     val transaction = rememberSaveable {
         mutableStateOf("")
     }
-    val description = rememberSaveable {
+    val value = rememberSaveable {
         mutableStateOf("")
     }
-    val value = rememberSaveable {
+    val timestamp = rememberSaveable {
+        mutableLongStateOf(0L)
+    }
+    val description = rememberSaveable {
         mutableStateOf("")
     }
     val (selectedTransactionType, onSelectTransactionType) = rememberSaveable {
         mutableStateOf(TransactionType.EXPENSES)
     }
 
-    var isDropdownMenuExpanded by rememberSaveable {
+    val datePickerState = rememberDatePickerState()
+    var isDatePickerDialogOpened by rememberSaveable {
         mutableStateOf(false)
     }
-    var selectedDropdownMenuOption by rememberSaveable {
+
+    var isCategoryDropdownMenuExpanded by rememberSaveable {
+        mutableStateOf(false)
+    }
+    var selectedCategoryDropdownMenuOption by rememberSaveable {
         mutableStateOf(TransactionCategory.OTHER_EXPENSE)
     }
 
-    var isTransactionError by remember {
-        mutableStateOf(false)
-    }
-    var isValueError by remember {
-        mutableStateOf(false)
+    val isError = remember {
+        mutableStateOf<List<AddTransactionError>>(listOf())
     }
 
     Scaffold(
         modifier = Modifier
-            .imePadding(),
+            .imePadding()
+            .padding(bottom = 24.dp),
         topBar = {
             LumenTopAppBar(
                 title = stringResource(R.string.add_transactions_title),
@@ -93,9 +131,45 @@ fun AddTransactionsScreen(
                     }
                 }
             )
-        }
+        },
     ) { innerPadding ->
         Box {
+
+            LaunchedEffect(isConnected) {
+                if (viewModel.accountConfig.value?.isUserLoggedIn == true && !isConnected) {
+                    snackBarHostState.showSnackbar(
+                        message = lostConnectionMessage
+                    )
+                }
+            }
+
+            if (isDatePickerDialogOpened) {
+                DatePickerDialog(
+                    onDismissRequest = { isDatePickerDialogOpened = false },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                datePickerState.selectedDateMillis?.let {
+                                    timestamp.longValue = it
+                                }
+                                isDatePickerDialogOpened = false
+                            }
+                        ) {
+                            Text(stringResource(R.string.confirm_button_label))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = { isDatePickerDialogOpened = false }
+                        ) {
+                            Text(stringResource(R.string.cancel_button_label))
+                        }
+                    }
+                ) {
+                    DatePicker(state = datePickerState)
+                }
+            }
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -111,10 +185,12 @@ fun AddTransactionsScreen(
                     placeHolder = {
                         Text(stringResource(R.string.add_transactions_transaction_label))
                     },
-                    isError = isTransactionError,
+                    isError = isError.value.hasTransactionError(AddTransactionError.TRANSACTION_ERROR),
                     supportingText = {
                         Text(
-                            if (isTransactionError) stringResource(R.string.add_transactions_empty_field_error)
+                            if (isError.value.hasTransactionError(AddTransactionError.TRANSACTION_ERROR)) stringResource(
+                                R.string.add_transactions_empty_field_error
+                            )
                             else ""
                         )
                     }
@@ -132,14 +208,43 @@ fun AddTransactionsScreen(
                     currencyLocale = viewModel.getLocaleByCurrency(
                         viewModel.accountConfig.value?.selectedCurrency ?: Currencies.USD.name
                     ),
-                    isError = isValueError,
+                    isError = isError.value.hasTransactionError(AddTransactionError.VALUE_ERROR),
                     supportingText = {
                         Text(
-                            if (isValueError) stringResource(R.string.add_transactions_empty_field_error)
+                            if (isError.value.hasTransactionError(AddTransactionError.VALUE_ERROR)) stringResource(
+                                R.string.add_transactions_empty_field_error
+                            )
                             else ""
                         )
                     }
                 )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    Button(
+                        onClick = {
+                            isDatePickerDialogOpened = true
+                        }
+                    ) {
+                        Text(stringResource(R.string.add_transactions_transaction_select_date_label))
+                    }
+                    if (timestamp.longValue > 0) {
+                        Text(
+                            stringResource(
+                                R.string.add_transactions_transaction_selected_date_label,
+                                Date(timestamp.longValue).formatDate(
+                                    viewModel.getLocaleForDateFormat(
+                                        viewModel.accountConfig.value?.selectedLanguage
+                                            ?: Languages.EN.name
+                                    )
+                                )
+                            ),
+                            modifier = Modifier
+                                .padding(start = 16.dp)
+                        )
+                    }
+                }
                 LumenTextField(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -168,17 +273,19 @@ fun AddTransactionsScreen(
                         modifier = Modifier
                             .padding(top = 16.dp),
                         menuOptions = TransactionCategory.entries.toList(),
-                        isExpanded = isDropdownMenuExpanded,
-                        onIsExpandedChanged = { isDropdownMenuExpanded = !isDropdownMenuExpanded },
-                        selectedOption = selectedDropdownMenuOption,
-                        onOptionSelected = { selectedDropdownMenuOption = it },
-                        onDismissRequest = { isDropdownMenuExpanded = false }
+                        isExpanded = isCategoryDropdownMenuExpanded,
+                        onIsExpandedChanged = {
+                            isCategoryDropdownMenuExpanded = !isCategoryDropdownMenuExpanded
+                        },
+                        selectedOption = selectedCategoryDropdownMenuOption,
+                        onOptionSelected = { selectedCategoryDropdownMenuOption = it },
+                        onDismissRequest = { isCategoryDropdownMenuExpanded = false }
                     )
                     Icon(
                         modifier = Modifier
                             .align(Alignment.CenterVertically),
-                        imageVector = selectedDropdownMenuOption.icon,
-                        contentDescription = stringResource(selectedDropdownMenuOption.label)
+                        imageVector = selectedCategoryDropdownMenuOption.icon,
+                        contentDescription = stringResource(selectedCategoryDropdownMenuOption.label)
                     )
                 }
                 ElevatedButton(
@@ -186,21 +293,73 @@ fun AddTransactionsScreen(
                         .align(Alignment.CenterHorizontally)
                         .padding(top = 36.dp),
                     onClick = {
-                        if (transaction.value.isBlank()) {
-                            isTransactionError = true
-                        } else if (value.value.isBlank()) {
-                            isValueError = true
+                        verifyAddTransactionError(transaction, value, timestamp, isError)
+
+                        val doubleValue = NumberFormat.getInstance(
+                            viewModel.getLocaleByCurrency(
+                                viewModel.accountConfig.value?.selectedCurrency
+                                    ?: Currencies.USD.name
+                            )
+                        )
+                            .parse(value.value)
+                            ?.toDouble()
+
+                        val userTransaction = UserTransaction(
+                            title = transaction.value,
+                            description = description.value,
+                            value = doubleValue,
+                            timestamp = timestamp.longValue,
+                            type = selectedTransactionType.name,
+                            categoryName = selectedCategoryDropdownMenuOption.name
+                        )
+
+                        if (isError.value.isEmpty() && isConnected) {
+                            viewModel.addTransactionOnFirestore(
+                                userTransaction,
+                                context
+                            )
                         } else {
-                            isTransactionError = false
-                            isValueError = false
+                            coroutineScope.launch {
+                                viewModel.addTransactionToSql(userTransaction)
+                            }
                         }
                     }
                 ) {
                     Text(
                         stringResource(R.string.save_label),
-                        modifier = Modifier.padding(horizontal = 24.dp))
+                        modifier = Modifier.padding(horizontal = 24.dp)
+                    )
                 }
             }
         }
     }
+}
+
+private enum class AddTransactionError {
+    TRANSACTION_ERROR,
+    VALUE_ERROR,
+    TIMESTAMP_ERROR;
+}
+
+private fun List<AddTransactionError>.hasTransactionError(error: AddTransactionError) =
+    this@hasTransactionError.any { it == error }
+
+private fun verifyAddTransactionError(
+    transaction: MutableState<String>,
+    value: MutableState<String>,
+    timestamp: MutableLongState,
+    isError: MutableState<List<AddTransactionError>>
+) {
+
+    val errors = mutableListOf<AddTransactionError>()
+
+    if (transaction.value.isBlank()) {
+        errors.add(AddTransactionError.TRANSACTION_ERROR)
+    } else if (value.value.isBlank()) {
+        errors.add(AddTransactionError.VALUE_ERROR)
+    } else if (timestamp.longValue <= 0) {
+        errors.add(AddTransactionError.TIMESTAMP_ERROR)
+    }
+
+    isError.value = errors
 }

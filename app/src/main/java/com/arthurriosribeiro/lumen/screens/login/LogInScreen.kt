@@ -1,7 +1,5 @@
 package com.arthurriosribeiro.lumen.screens.login
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,7 +31,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -47,7 +44,7 @@ import com.arthurriosribeiro.lumen.components.LumenTextField
 import com.arthurriosribeiro.lumen.components.LumenTopAppBar
 import com.arthurriosribeiro.lumen.components.MiddleTextDivider
 import com.arthurriosribeiro.lumen.model.AccountConfiguration
-import com.arthurriosribeiro.lumen.model.SignInState
+import com.arthurriosribeiro.lumen.model.RequestState
 import com.arthurriosribeiro.lumen.screens.viewmodel.AuthViewModel
 import kotlinx.coroutines.launch
 
@@ -183,16 +180,16 @@ fun LogInScreen(
 
             LaunchedEffect(signInState) {
                 when (authViewModel.signInState.value) {
-                    is SignInState.Loading -> isLoading = true
-                    is SignInState.Success -> {
+                    is RequestState.Loading -> isLoading = true
+                    is RequestState.Success -> {
                         isLoading = false
                         navController.popBackStack()
                     }
-                    is SignInState.Error -> {
+                    is RequestState.Error -> {
                         isLoading = false
                         coroutineScope.launch {
                             snackBarHostState.showSnackbar(
-                                message = (signInState as SignInState.Error).message
+                                message = (signInState as RequestState.Error).message
                             )
                         }
                     }
