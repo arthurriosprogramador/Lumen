@@ -19,6 +19,7 @@ import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -262,6 +263,17 @@ fun AddTransactionsScreen(
                                 .padding(start = 16.dp)
                         )
                     }
+
+                    if (isError.value.hasTransactionError(AddTransactionError.TIMESTAMP_ERROR)) {
+                        Text(
+                            stringResource(
+                                R.string.add_transactions_empty_field_error,
+                            ),
+                            modifier = Modifier
+                                .padding(start = 16.dp),
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
                 LumenTextField(
                     modifier = Modifier
@@ -363,7 +375,7 @@ fun AddTransactionsScreen(
                             actionLabel = "OK",
                         )
 
-                        if (result == SnackbarResult.Dismissed) {
+                        if (result == SnackbarResult.Dismissed || result == SnackbarResult.ActionPerformed) {
                             navController.popBackStack()
                             viewModel.clearStates()
                         }
