@@ -15,7 +15,6 @@ import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -23,6 +22,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
@@ -46,12 +46,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.arthurriosribeiro.lumen.R
+import com.arthurriosribeiro.lumen.components.LumenCircularProgressIndicator
 import com.arthurriosribeiro.lumen.components.LumenDropdownMenu
 import com.arthurriosribeiro.lumen.components.LumenRadioButton
+import com.arthurriosribeiro.lumen.components.LumenSnackbarHost
 import com.arthurriosribeiro.lumen.components.LumenTextField
 import com.arthurriosribeiro.lumen.components.LumenTopAppBar
+import com.arthurriosribeiro.lumen.components.SnackbarType
 import com.arthurriosribeiro.lumen.model.Currencies
 import com.arthurriosribeiro.lumen.model.Languages
+import com.arthurriosribeiro.lumen.model.RequestState
 import com.arthurriosribeiro.lumen.model.TransactionCategory
 import com.arthurriosribeiro.lumen.model.TransactionType
 import com.arthurriosribeiro.lumen.model.UserTransaction
@@ -68,15 +72,18 @@ fun AddTransactionsScreen(
     navController: NavController,
     viewModel: MainViewModel
 ) {
+    val lostConnectionMessage = stringResource(R.string.lost_connection_message)
+    val transactionSuccessfullyAddedMessage = stringResource(R.string.add_transactions_transaction_successfully_added)
+
     val context = LocalContext.current
 
     val coroutineScope = rememberCoroutineScope()
 
     val networkMonitor = remember { NetworkUtils(context) }
     val isConnected by networkMonitor.isConnected.collectAsState()
-    val lostConnectionMessage = stringResource(R.string.lost_connection_message)
 
     val snackBarHostState = remember { SnackbarHostState() }
+    val snackbarType = remember { mutableStateOf<SnackbarType?>(null) }
 
     val scrollState = rememberScrollState()
 
@@ -112,10 +119,15 @@ fun AddTransactionsScreen(
         mutableStateOf<List<AddTransactionError>>(listOf())
     }
 
+    val addTransactionState by viewModel.addTransactionState.collectAsState()
+
+    var isLoading by remember {
+        mutableStateOf(false)
+    }
+
     Scaffold(
         modifier = Modifier
-            .imePadding()
-            .padding(bottom = 24.dp),
+            .imePadding(),
         topBar = {
             LumenTopAppBar(
                 title = stringResource(R.string.add_transactions_title),
@@ -134,13 +146,14 @@ fun AddTransactionsScreen(
             )
         },
         snackbarHost = {
-            SnackbarHost(snackBarHostState)
+            LumenSnackbarHost(snackBarHostState, snackbarType)
         }
     ) { innerPadding ->
         Box {
 
             LaunchedEffect(isConnected) {
                 if (viewModel.accountConfig.value?.isUserLoggedIn == true && !isConnected) {
+                    snackbarType.value = SnackbarType.ERROR
                     snackBarHostState.showSnackbar(
                         message = lostConnectionMessage
                     )
@@ -179,6 +192,7 @@ fun AddTransactionsScreen(
                     .fillMaxSize()
                     .padding(innerPadding)
                     .padding(horizontal = 24.dp)
+                    .padding(bottom = 24.dp)
                     .verticalScroll(scrollState)
             ) {
                 LumenTextField(
@@ -336,6 +350,39 @@ fun AddTransactionsScreen(
                 }
             }
         }
+
+        LaunchedEffect(addTransactionState) {
+            when (viewModel.addTransactionState.value) {
+                is RequestState.Loading -> isLoading = true
+                is RequestState.Success -> {
+                    isLoading = false
+                    snackbarType.value = SnackbarType.SUCCESS
+                    coroutineScope.launch {
+                        val result = snackBarHostState.showSnackbar(
+                            message = transactionSuccessfullyAddedMessage,
+                            actionLabel = "OK",
+                        )
+
+                        if (result == SnackbarResult.Dismissed) {
+                            navController.popBackStack()
+                            viewModel.clearStates()
+                        }
+                    }
+                }
+                is RequestState.Error -> {
+                    isLoading = false
+                    snackbarType.value = SnackbarType.ERROR
+                    coroutineScope.launch {
+                        snackBarHostState.showSnackbar(
+                            message = (addTransactionState as RequestState.Error).message
+                        )
+                    }
+                }
+                else -> {}
+            }
+        }
+
+        if (isLoading) LumenCircularProgressIndicator()
     }
 }
 

@@ -223,4 +223,8 @@ class MainViewModel @Inject constructor(
             else -> Locale.US
         }
     }
+
+    fun clearStates() {
+        _addTransactionState.value = null
+    }
  }

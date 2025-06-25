@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
 import kotlinx.coroutines.flow.collectLatest
@@ -85,7 +86,8 @@ fun LumenTextField(
         prefix = { Text(prefix, fontWeight = FontWeight.Bold) },
         keyboardOptions = KeyboardOptions(
             keyboardType = keyboardType,
-            imeAction = imeAction
+            imeAction = imeAction,
+            capitalization = KeyboardCapitalization.Sentences
         ),
         keyboardActions = keyboardActions,
         colors = TextFieldDefaults.colors(

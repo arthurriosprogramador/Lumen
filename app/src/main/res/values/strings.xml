@@ -85,4 +85,5 @@
     <string name="add_transactions_transaction_select_date_label">Select a date</string>
     <string name="add_transactions_transaction_selected_date_label">Selected date: %s</string>
     <string name="add_transactions_empty_field_error">Field cannot be empty</string>
+    <string name="add_transactions_transaction_successfully_added">The transaction was successfully added!</string>
 </resources>
