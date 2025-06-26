@@ -30,6 +30,8 @@
     <string name="shopping_label">Compras</string>
     <string name="bills_label">Contas</string>
     <string name="beauty_and_self_care_label">Beleza e cuidados pessoais</string>
+    <string name="education_label">Educação</string>
+    <string name="entertainment_label">Entretenimento</string>
     <string name="paycheck_label">Salário</string>
     <string name="other_expenses_label">Outros gastos</string>
     <string name="other_incomes_label">Outras rendas</string>
@@ -86,4 +88,7 @@
     <string name="add_transactions_transaction_selected_date_label">Data selecionada: %s</string>
     <string name="add_transactions_empty_field_error">O campo não pode estar vazio</string>
     <string name="add_transactions_transaction_successfully_added">Transação adicionada com sucesso!</string>
+
+    <!-- Transactions Tab  -->
+    <string name="transactions_empty_list">Você ainda não tem nenhuma transação. Que tal adicionar a sua primeira?</string>
 </resources>

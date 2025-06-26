@@ -4,6 +4,7 @@ import android.os.Parcelable
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AttachMoney
+import androidx.compose.material.icons.rounded.Book
 import androidx.compose.material.icons.rounded.Checkroom
 import androidx.compose.material.icons.rounded.Fastfood
 import androidx.compose.material.icons.rounded.MoneyOff
@@ -11,6 +12,7 @@ import androidx.compose.material.icons.rounded.Payment
 import androidx.compose.material.icons.rounded.RequestPage
 import androidx.compose.material.icons.rounded.ShoppingCart
 import androidx.compose.material.icons.rounded.Spa
+import androidx.compose.material.icons.rounded.VideogameAsset
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -30,7 +32,7 @@ data class UserTransaction(
     val description: String? = null,
     val value: Double? = null,
     val timestamp: Long? = null,
-    val type: String,
+    val type: String = TransactionType.EXPENSES.name,
     val categoryName: String? = null,
 ) : Parcelable
 
@@ -46,6 +48,8 @@ enum class TransactionCategory(val icon: ImageVector, @StringRes val label: Int)
     SHOPPING(Icons.Rounded.ShoppingCart, R.string.shopping_label),
     BILLS(Icons.Rounded.RequestPage, R.string.bills_label),
     BEAUTY(Icons.Rounded.Spa, R.string.beauty_and_self_care_label),
+    EDUCATION(Icons.Rounded.Book, R.string.education_label),
+    ENTERTAINMENT(Icons.Rounded.VideogameAsset, R.string.entertainment_label),
     PAYCHECK(Icons.Rounded.AttachMoney, R.string.paycheck_label),
     OTHER_EXPENSE(Icons.Rounded.MoneyOff, R.string.other_expenses_label),
     OTHER_INCOME(Icons.Rounded.AttachMoney, R.string.other_incomes_label)

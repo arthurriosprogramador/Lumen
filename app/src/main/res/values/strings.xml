@@ -32,6 +32,8 @@
     <string name="shopping_label">Shopping</string>
     <string name="bills_label">Bills</string>
     <string name="beauty_and_self_care_label">Beauty and self care</string>
+    <string name="education_label">Education</string>
+    <string name="entertainment_label">Entertainment</string>
     <string name="paycheck_label">Paycheck</string>
     <string name="other_expenses_label">Other expenses</string>
     <string name="other_incomes_label">Other incomes</string>
@@ -86,4 +88,7 @@
     <string name="add_transactions_transaction_selected_date_label">Selected date: %s</string>
     <string name="add_transactions_empty_field_error">Field cannot be empty</string>
     <string name="add_transactions_transaction_successfully_added">The transaction was successfully added!</string>
+
+    <!-- Transactions Tab  -->
+    <string name="transactions_empty_list">You don\'t have any transaction yet. What about if you add your first one?</string>
 </resources>

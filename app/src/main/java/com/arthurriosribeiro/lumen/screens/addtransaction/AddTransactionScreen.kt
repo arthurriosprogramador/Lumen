@@ -21,7 +21,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
@@ -137,6 +136,7 @@ fun AddTransactionsScreen(
                         modifier = Modifier.padding(end = 24.dp),
                         onClick = {
                             navController.popBackStack()
+                            viewModel.clearAddTransactionState()
                         }) {
                         Icon(
                             imageVector = Icons.Rounded.Close,
@@ -350,7 +350,7 @@ fun AddTransactionsScreen(
                             )
                         } else {
                             coroutineScope.launch {
-                                viewModel.addTransactionToSql(userTransaction)
+                                viewModel.addTransactionToSql(userTransaction, context)
                             }
                         }
                     }
@@ -377,7 +377,7 @@ fun AddTransactionsScreen(
 
                         if (result == SnackbarResult.Dismissed || result == SnackbarResult.ActionPerformed) {
                             navController.popBackStack()
-                            viewModel.clearStates()
+                            viewModel.clearAddTransactionState()
                         }
                     }
                 }

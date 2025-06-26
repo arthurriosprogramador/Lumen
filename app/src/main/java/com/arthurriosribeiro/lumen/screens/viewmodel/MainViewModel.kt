@@ -15,6 +15,7 @@ import com.arthurriosribeiro.lumen.model.RequestState
 import com.arthurriosribeiro.lumen.model.UserTransaction
 import com.arthurriosribeiro.lumen.repository.LumenRepository
 import com.arthurriosribeiro.lumen.utils.FirestoreCollectionUtils
+import com.arthurriosribeiro.lumen.utils.convertFirestoreDocumentToUserTransactionList
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -148,6 +149,7 @@ class MainViewModel @Inject constructor(
         firestore.collection(FirestoreCollectionUtils.TRANSACTIONS_COLLECTION)
             .add(
                 mapOf(
+                    FirestoreCollectionUtils.USER_ID to firebaseAuth.uid,
                     FirestoreCollectionUtils.TRANSACTION_TITLE to transaction.title,
                     FirestoreCollectionUtils.TRANSACTION_DESCRIPTION to transaction.description,
                     FirestoreCollectionUtils.TRANSACTION_VALUE to transaction.value,
@@ -158,19 +160,77 @@ class MainViewModel @Inject constructor(
             ).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     _addTransactionState.value = RequestState.Success(Unit)
-                    viewModelScope.launch {
-                        addTransactionToSql(transaction)
-                    }
+                    addTransactionToSql(transaction, context)
                 } else {
                     val exceptionMessage = task.exception?.message
-                    _addTransactionState.value =
-                        if (!exceptionMessage.isNullOrBlank()) RequestState.Error(exceptionMessage)
-                        else RequestState.Error(context.getString(R.string.default_error))
+                    _addTransactionState.value = handleExceptionMessage(exceptionMessage, context)
                 }
             }
     }
 
-    suspend fun addTransactionToSql(transaction: UserTransaction) = lumenRepository.insertTransaction(transaction)
+    fun addTransactionToSql(transaction: UserTransaction, context: Context) {
+        _addTransactionState.value = RequestState.Loading
+        viewModelScope.launch {
+            try {
+                lumenRepository.insertTransaction(transaction)
+                _addTransactionState.value = RequestState.Success(Unit)
+            } catch (e: Exception) {
+                _addTransactionState.value = handleExceptionMessage(e.message, context)
+            }
+        }
+    }
+
+    fun getAllTransactionsFromFirestore(context: Context) {
+        _transactions.value = RequestState.Loading
+        firestore.collection(FirestoreCollectionUtils.TRANSACTIONS_COLLECTION)
+            .whereEqualTo(FirestoreCollectionUtils.USER_ID, firebaseAuth.currentUser?.uid)
+            .get()
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val transactions = task.result.documents.convertFirestoreDocumentToUserTransactionList()
+                    checkDataIntegrity(transactions, context)
+                    _transactions.value = RequestState.Success(transactions)
+                } else {
+                    val exceptionMessage = task.exception?.message
+                    _transactions.value = handleExceptionMessage(exceptionMessage, context)
+                }
+            }
+    }
+
+    fun getAllTransactionsFromSql(context: Context) {
+        _transactions.value = RequestState.Loading
+        viewModelScope.launch {
+            try {
+                val transactionList = lumenRepository.selectAllTransactions()
+                _transactions.value = RequestState.Success(transactionList)
+            } catch (e: Exception) {
+                _addTransactionState.value = handleExceptionMessage(e.message, context)
+            }
+        }
+    }
+
+    private fun checkDataIntegrity(transactionsFromFirestore: List<UserTransaction>, context: Context) {
+        var transactionsFromRoom = listOf<UserTransaction>()
+
+        viewModelScope.launch{
+            transactionsFromRoom = lumenRepository.selectAllTransactions()
+        }
+
+        if (transactionsFromRoom.sortedBy { it.timestamp } == transactionsFromFirestore.sortedBy { it.timestamp }) return
+
+        if (transactionsFromRoom.size > transactionsFromFirestore.size) {
+            transactionsFromFirestore.forEach {
+                viewModelScope.launch {
+                    addTransactionOnFirestore(it, context)
+                }
+            }
+        }
+    }
+
+    private fun handleExceptionMessage(exceptionMessage: String?, context: Context) : RequestState.Error {
+        return if (!exceptionMessage.isNullOrBlank()) RequestState.Error(exceptionMessage)
+        else RequestState.Error(context.getString(R.string.default_error))
+    }
 
     fun copyUriToInternalStorage(context: Context, uri: Uri): String? {
         val file = File(context.filesDir, "user_profile.jpg")
@@ -224,7 +284,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun clearStates() {
+    fun clearAddTransactionState() {
         _addTransactionState.value = null
     }
  }
