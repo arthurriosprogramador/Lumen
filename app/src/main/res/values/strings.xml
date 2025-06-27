@@ -95,4 +95,6 @@
     <string name="transactions_date_label">Date</string>
     <string name="transactions_category_label">Category</string>
     <string name="transactions_value_label">Value</string>
+    <string name="transactions_description_label">Description</string>
+    <string name="transactions_description_see_more_button_label">See more</string>
 </resources>
