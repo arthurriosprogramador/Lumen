@@ -53,8 +53,6 @@ import com.arthurriosribeiro.lumen.components.LumenSnackbarHost
 import com.arthurriosribeiro.lumen.components.LumenTextField
 import com.arthurriosribeiro.lumen.components.LumenTopAppBar
 import com.arthurriosribeiro.lumen.components.SnackbarType
-import com.arthurriosribeiro.lumen.model.Currencies
-import com.arthurriosribeiro.lumen.model.Languages
 import com.arthurriosribeiro.lumen.model.RequestState
 import com.arthurriosribeiro.lumen.model.TransactionCategory
 import com.arthurriosribeiro.lumen.model.TransactionType
@@ -65,6 +63,7 @@ import com.arthurriosribeiro.lumen.utils.formatDate
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Date
+import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -221,12 +220,8 @@ fun AddTransactionsScreen(
                     value = value,
                     placeHolder = { Text(stringResource(R.string.add_transactions_transaction_value_label)) },
                     keyboardType = KeyboardType.Number,
-                    prefix = viewModel.getPrefixByCurrency(
-                        viewModel.accountConfig.value?.selectedCurrency ?: ""
-                    ),
-                    currencyLocale = viewModel.getLocaleByCurrency(
-                        viewModel.accountConfig.value?.selectedCurrency ?: Currencies.USD.name
-                    ),
+                    prefix = viewModel.getPrefixByCurrency(),
+                    currencyLocale = viewModel.getLocaleByCurrency(),
                     isError = isError.value.hasTransactionError(AddTransactionError.VALUE_ERROR),
                     supportingText = {
                         Text(
@@ -253,10 +248,7 @@ fun AddTransactionsScreen(
                             stringResource(
                                 R.string.add_transactions_transaction_selected_date_label,
                                 Date(timestamp.longValue).formatDate(
-                                    viewModel.getLocaleForDateFormat(
-                                        viewModel.accountConfig.value?.selectedLanguage
-                                            ?: Languages.EN.name
-                                    )
+                                    viewModel.getLocaleByLanguage()
                                 )
                             ),
                             modifier = Modifier
@@ -326,15 +318,13 @@ fun AddTransactionsScreen(
                         verifyAddTransactionError(transaction, value, timestamp, isError)
 
                         val doubleValue = NumberFormat.getInstance(
-                            viewModel.getLocaleByCurrency(
-                                viewModel.accountConfig.value?.selectedCurrency
-                                    ?: Currencies.USD.name
-                            )
+                            viewModel.getLocaleByCurrency()
                         )
                             .parse(value.value)
                             ?.toDouble()
 
                         val userTransaction = UserTransaction(
+                            uniqueId = UUID.randomUUID().toString(),
                             title = transaction.value,
                             description = description.value,
                             value = doubleValue,

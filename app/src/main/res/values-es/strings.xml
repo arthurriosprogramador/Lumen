@@ -6,6 +6,7 @@
     <string name="chevron_right_description">Icono de flecha derecha</string>
     <string name="arrow_back_description">Icono de fecha hacia atrás</string>
     <string name="close_icon_description">Cerrar</string>
+    <string name="filter_icon_description">Botón de icono de filtro</string>
 
     <string name="sign_up_label">Registrarse</string>
     <string name="login_label">Ingresar</string>
@@ -91,4 +92,7 @@
 
     <!-- Transactions Tab  -->
     <string name="transactions_empty_list">Aún no tienes ninguna transacción. ¿Qué tal si agregas la primera?</string>
+    <string name="transactions_date_label">Fecha</string>
+    <string name="transactions_category_label">Categoría</string>
+    <string name="transactions_value_label">Valor</string>
 </resources>

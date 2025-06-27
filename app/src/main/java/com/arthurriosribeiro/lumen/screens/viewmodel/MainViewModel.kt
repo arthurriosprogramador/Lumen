@@ -19,9 +19,11 @@ import com.arthurriosribeiro.lumen.utils.convertFirestoreDocumentToUserTransacti
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -42,10 +44,13 @@ class MainViewModel @Inject constructor(
     private val _addTransactionState: MutableStateFlow<RequestState<Unit>?> = MutableStateFlow(null)
     val addTransactionState: StateFlow<RequestState<Unit>?> = _addTransactionState
 
+    private val _deleteTransactionState: MutableStateFlow<RequestState<Unit>?> = MutableStateFlow(null)
+    val deleteTransaction: StateFlow<RequestState<Unit>?> = _deleteTransactionState
+
     private val _transactions: MutableStateFlow<RequestState<List<UserTransaction>>?> = MutableStateFlow(null)
     val transactions: StateFlow<RequestState<List<UserTransaction>>?> = _transactions
 
-    suspend fun getAccountConfig() : AccountConfiguration?{
+    suspend fun getAccountConfig() : AccountConfiguration? {
             val config = runCatching {
                 lumenRepository.selectAccountConfiguration()
             }.getOrNull()
@@ -150,6 +155,7 @@ class MainViewModel @Inject constructor(
             .add(
                 mapOf(
                     FirestoreCollectionUtils.USER_ID to firebaseAuth.uid,
+                    FirestoreCollectionUtils.TRANSACTIONS_UNIQUE_ID to transaction.uniqueId,
                     FirestoreCollectionUtils.TRANSACTION_TITLE to transaction.title,
                     FirestoreCollectionUtils.TRANSACTION_DESCRIPTION to transaction.description,
                     FirestoreCollectionUtils.TRANSACTION_VALUE to transaction.value,
@@ -164,6 +170,28 @@ class MainViewModel @Inject constructor(
                 } else {
                     val exceptionMessage = task.exception?.message
                     _addTransactionState.value = handleExceptionMessage(exceptionMessage, context)
+                }
+            }
+    }
+
+    fun deleteTransactionFromFirestore(uniqueId: String, context: Context) {
+        _deleteTransactionState.value = RequestState.Loading
+        firestore.collection(FirestoreCollectionUtils.TRANSACTIONS_COLLECTION)
+            .whereEqualTo(FirestoreCollectionUtils.TRANSACTIONS_UNIQUE_ID, uniqueId)
+            .get()
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    task.result.documents.firstOrNull()?.reference?.delete()?.addOnCompleteListener { deleteTask ->
+                        if (deleteTask.isSuccessful) {
+                            _deleteTransactionState.value = RequestState.Success(Unit)
+                        } else {
+                            val exceptionMessage = deleteTask.exception?.message
+                            _deleteTransactionState.value = handleExceptionMessage(exceptionMessage, context)
+                        }
+                    }
+                } else {
+                    val exceptionMessage = task.exception?.message
+                    _deleteTransactionState.value = handleExceptionMessage(exceptionMessage, context)
                 }
             }
     }
@@ -188,8 +216,15 @@ class MainViewModel @Inject constructor(
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val transactions = task.result.documents.convertFirestoreDocumentToUserTransactionList()
-                    checkDataIntegrity(transactions, context)
-                    _transactions.value = RequestState.Success(transactions)
+                    viewModelScope.launch {
+                        val isFirestoreUpdated = isFirestoreDataUpdated(transactions, context)
+
+                        if (isFirestoreUpdated) {
+                            _transactions.value = RequestState.Success(transactions)
+                        } else {
+                            getAllTransactionsFromSql(context)
+                        }
+                    }
                 } else {
                     val exceptionMessage = task.exception?.message
                     _transactions.value = handleExceptionMessage(exceptionMessage, context)
@@ -209,22 +244,26 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun checkDataIntegrity(transactionsFromFirestore: List<UserTransaction>, context: Context) {
-        var transactionsFromRoom = listOf<UserTransaction>()
+    private suspend fun isFirestoreDataUpdated(transactionsFromFirestore: List<UserTransaction>, context: Context) : Boolean {
 
-        viewModelScope.launch{
-            transactionsFromRoom = lumenRepository.selectAllTransactions()
+        val transactionsFromRoom = withContext(Dispatchers.IO) {
+            lumenRepository.selectAllTransactions()
         }
 
-        if (transactionsFromRoom.sortedBy { it.timestamp } == transactionsFromFirestore.sortedBy { it.timestamp }) return
+        val roomIds = transactionsFromRoom.map { it.uniqueId }.toSet()
+        val firestoreIds = transactionsFromFirestore.map { it.uniqueId }.toSet()
 
-        if (transactionsFromRoom.size > transactionsFromFirestore.size) {
-            transactionsFromFirestore.forEach {
-                viewModelScope.launch {
-                    addTransactionOnFirestore(it, context)
-                }
-            }
+        val transactionsToAdd = transactionsFromRoom.filter { it.uniqueId !in firestoreIds }
+        val transactionsToDelete = transactionsFromFirestore.filter { it.uniqueId !in roomIds }
+
+        transactionsToAdd.forEach { transaction ->
+            addTransactionOnFirestore(transaction, context)
         }
+
+        transactionsToDelete.forEach {
+            deleteTransactionFromFirestore(it.uniqueId, context)
+        }
+        return false
     }
 
     private fun handleExceptionMessage(exceptionMessage: String?, context: Context) : RequestState.Error {
@@ -247,8 +286,8 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun getLanguageLabel(language: String): Int {
-        val languageCode = Languages.valueOf(language)
+    fun getLanguageLabel(language: String?): Int {
+        val languageCode = Languages.valueOf(language ?: Languages.EN.name)
 
         return when (languageCode) {
             Languages.EN -> R.string.user_configuration_english_language
@@ -257,8 +296,8 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun getPrefixByCurrency(currency: String): String {
-        return when(currency) {
+    fun getPrefixByCurrency(): String {
+        return when(accountConfig.value?.selectedCurrency) {
             Currencies.USD.name -> "$"
             Currencies.BRL.name -> "R$"
             Currencies.EUR.name -> "€"
@@ -266,8 +305,8 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun getLocaleByCurrency(currency: String) : Locale {
-        return when(currency) {
+    fun getLocaleByCurrency() : Locale {
+        return when(accountConfig.value?.selectedCurrency) {
             Currencies.USD.name -> Locale.US
             Currencies.BRL.name -> Locale("pt", "BR")
             Currencies.EUR.name -> Locale.FRANCE
@@ -275,14 +314,16 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun getLocaleForDateFormat(language: String) : Locale {
-        return when(language) {
+    fun getLocaleByLanguage() : Locale {
+        return when(accountConfig.value?.selectedLanguage) {
             Languages.EN.name -> Locale.US
             Languages.PT.name -> Locale("pt", "BR")
             Languages.ES.name -> Locale.FRANCE
             else -> Locale.US
         }
     }
+
+    suspend fun deleteAllTransactions() = lumenRepository.deleteAllTransactions()
 
     fun clearAddTransactionState() {
         _addTransactionState.value = null

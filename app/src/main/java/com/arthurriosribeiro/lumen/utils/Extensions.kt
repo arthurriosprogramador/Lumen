@@ -1,9 +1,11 @@
 package com.arthurriosribeiro.lumen.utils
 
 import android.icu.text.DateFormat
+import android.icu.text.NumberFormat
 import com.arthurriosribeiro.lumen.model.TransactionType
 import com.arthurriosribeiro.lumen.model.UserTransaction
 import com.google.firebase.firestore.DocumentSnapshot
+import java.text.ParseException
 import java.util.Date
 import java.util.Locale
 
@@ -17,7 +19,7 @@ fun List<DocumentSnapshot>.convertFirestoreDocumentToUserTransactionList() : Lis
 
     this.forEach {
         val transaction = UserTransaction(
-            firebaseId = it.id,
+            uniqueId = it.getString(FirestoreCollectionUtils.TRANSACTIONS_UNIQUE_ID).orEmpty(),
             title = it.getString(FirestoreCollectionUtils.TRANSACTION_TITLE),
             description = it.getString(FirestoreCollectionUtils.TRANSACTION_DESCRIPTION),
             value = it.getDouble(FirestoreCollectionUtils.TRANSACTION_VALUE),
@@ -30,4 +32,18 @@ fun List<DocumentSnapshot>.convertFirestoreDocumentToUserTransactionList() : Lis
     }
 
     return transactions
+}
+
+fun String?.orDash() : String {
+    return if (this.isNullOrBlank()) "-" else this
+}
+
+fun Double.formatDoubleAsCurrency(locale: Locale, prefix: String) : String{
+    val numberFormat = NumberFormat.getNumberInstance(locale).apply {
+        minimumFractionDigits = 2
+        maximumFractionDigits = 2
+        isGroupingUsed = true
+    }
+
+    return  "$prefix ${numberFormat.format(this)}"
 }

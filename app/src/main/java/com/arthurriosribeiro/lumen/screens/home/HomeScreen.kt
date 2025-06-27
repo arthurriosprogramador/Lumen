@@ -13,29 +13,51 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import com.arthurriosribeiro.lumen.R
 import com.arthurriosribeiro.lumen.components.LumenBottomNavigationBar
+import com.arthurriosribeiro.lumen.components.LumenSnackbarHost
+import com.arthurriosribeiro.lumen.components.SnackbarType
 import com.arthurriosribeiro.lumen.navigation.LumenScreens
 import com.arthurriosribeiro.lumen.screens.home.tabs.FinanceTrackTabScreen
 import com.arthurriosribeiro.lumen.screens.home.tabs.TransactionsTabScreen
 import com.arthurriosribeiro.lumen.screens.home.tabs.UserConfigurationScreen
 import com.arthurriosribeiro.lumen.screens.viewmodel.AuthViewModel
 import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
+import com.arthurriosribeiro.lumen.utils.NetworkUtils
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(navController: NavController, viewModel: MainViewModel, authViewModel: AuthViewModel) {
+
+
+    val lostConnectionMessage = stringResource(R.string.lost_connection_message)
+
+    val context = LocalContext.current
+
+    val networkMonitor = remember { NetworkUtils(context) }
+    val isConnected by networkMonitor.isConnected.collectAsState()
+
+    val snackBarHostState = remember { SnackbarHostState() }
+    val snackbarType = remember { mutableStateOf<SnackbarType?>(null) }
+
     val bottomNavigationItems = listOf(
         LumenScreens.OVERVIEW_SCREEN,
         LumenScreens.TRANSACTIONS_SCREEN,
@@ -65,6 +87,15 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel, authViewM
         }
     }
 
+    LaunchedEffect(isConnected) {
+        if (viewModel.accountConfig.value?.isUserLoggedIn == true && !isConnected) {
+            snackbarType.value = SnackbarType.ERROR
+            snackBarHostState.showSnackbar(
+                message = lostConnectionMessage
+            )
+        }
+    }
+
     Scaffold(
         modifier = Modifier.padding(WindowInsets.navigationBars.asPaddingValues()),
         floatingActionButton = {
@@ -84,6 +115,9 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel, authViewM
                 }
             }
         },
+        snackbarHost = {
+            LumenSnackbarHost(snackBarHostState, snackbarType)
+        },
         bottomBar = { LumenBottomNavigationBar(navController, bottomNavigationItems, pagerState) }) { innerPadding ->
         HorizontalPager(
             modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
@@ -96,5 +130,18 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel, authViewM
                 2 -> UserConfigurationScreen(navController, viewModel, authViewModel)
             }
         }
+    }
+
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }
+            .collectLatest { page ->
+                if (page == 1) {
+                    if (viewModel.accountConfig.value?.isUserLoggedIn == false || !isConnected) {
+                        viewModel.getAllTransactionsFromSql(context)
+                    } else {
+                        viewModel.getAllTransactionsFromFirestore(context)
+                    }
+                }
+            }
     }
 }

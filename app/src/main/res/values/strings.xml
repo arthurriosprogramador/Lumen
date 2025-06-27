@@ -5,6 +5,7 @@
     <string name="chevron_right_description">Chevron right icon</string>
     <string name="arrow_back_description">Arrow back icon</string>
     <string name="close_icon_description">Close</string>
+    <string name="filter_icon_description">Filter button</string>
 
     <string name="sign_up_label">Sign up</string>
     <string name="login_label">Log in</string>
@@ -91,4 +92,7 @@
 
     <!-- Transactions Tab  -->
     <string name="transactions_empty_list">You don\'t have any transaction yet. What about if you add your first one?</string>
+    <string name="transactions_date_label">Date</string>
+    <string name="transactions_category_label">Category</string>
+    <string name="transactions_value_label">Value</string>
 </resources>

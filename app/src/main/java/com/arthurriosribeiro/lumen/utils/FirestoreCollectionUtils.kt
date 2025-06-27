@@ -8,6 +8,7 @@ object FirestoreCollectionUtils {
     const val USER_SELECTED_LANGUAGE = "selected_language"
     const val USER_SELECTED_CURRENCY = "selected_currency"
 
+    const val TRANSACTIONS_UNIQUE_ID = "unique_id"
     const val TRANSACTIONS_COLLECTION = "transactions"
     const val TRANSACTION_TITLE = "title"
     const val TRANSACTION_DESCRIPTION = "description"

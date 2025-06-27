@@ -49,7 +49,7 @@ import com.arthurriosribeiro.lumen.model.RequestState
 import com.arthurriosribeiro.lumen.navigation.LumenScreens
 import com.arthurriosribeiro.lumen.screens.viewmodel.AuthViewModel
 import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
-import com.arthurriosribeiro.lumen.utils.animation.orDash
+import com.arthurriosribeiro.lumen.utils.orDash
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,7 +74,7 @@ fun UserConfigurationScreen(
         mutableStateOf(viewModel.accountConfig.value?.name.orEmpty())
     }
     val (selectedLanguage, onLanguageSelected) = remember {
-        mutableStateOf(Languages.valueOf(viewModel.accountConfig.value?.selectedLanguage.orEmpty()))
+        mutableStateOf(Languages.valueOf(viewModel.accountConfig.value?.selectedLanguage ?: Languages.EN.name))
     }
     val (selectedCurrency, onCurrencySelected) = remember {
         mutableStateOf(viewModel.accountConfig.value?.selectedCurrency.orEmpty())
@@ -200,7 +200,7 @@ fun UserConfigurationScreen(
                     HorizontalDivider(modifier = Modifier.padding(top = 8.dp))
                     AccountMenuSection(
                         sectionLabel = stringResource(R.string.user_configuration_selected_language),
-                        sectionText = stringResource(viewModel.getLanguageLabel(viewModel.accountConfig.value?.selectedLanguage.orDash())),
+                        sectionText = stringResource(viewModel.getLanguageLabel(viewModel.accountConfig.value?.selectedLanguage)),
                         onClick = { showLanguageBottomSheet = true }
                     )
                     AccountMenuSection(
