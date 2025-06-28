@@ -21,7 +21,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -93,6 +92,13 @@ fun TransactionsTabScreen(viewModel: MainViewModel) {
     }
 
     val searchQuery = rememberSaveable { mutableStateOf("") }
+
+    val transactionFiltered = remember(transactions, searchQuery.value) {
+        transactions?.filter {
+            it.title?.lowercase()?.contains(searchQuery.value.lowercase(), ignoreCase = false) == true
+                    || it.description?.lowercase()?.contains(searchQuery.value.lowercase(), ignoreCase = false) == true
+        }
+    }
 
     Scaffold(
         snackbarHost = {
@@ -172,7 +178,9 @@ fun TransactionsTabScreen(viewModel: MainViewModel) {
                                     Text(
                                         "Search"
                                     )
-                                }
+                                },
+                                shape = RoundedCornerShape(24.dp),
+                                isIndicatorVisible = false
                             )
                             IconButton(
                                 onClick = {}
@@ -188,7 +196,9 @@ fun TransactionsTabScreen(viewModel: MainViewModel) {
                                 .fillMaxSize()
                                 .padding(horizontal = 24.dp)
                         ) {
-                            items(items = transactions!!) {
+                            val listToShow = if (searchQuery.value.isBlank()) transactions else transactionFiltered
+
+                            items(items = listToShow ?: emptyList()) {
                                 val isDescriptionOverflowed = descriptionOverflowMap[it.uniqueId] == true
                                 ElevatedCard(
                                     modifier = Modifier

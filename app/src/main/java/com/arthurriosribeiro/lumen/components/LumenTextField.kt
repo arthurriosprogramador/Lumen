@@ -1,8 +1,6 @@
 package com.arthurriosribeiro.lumen.components
 
 import android.icu.text.NumberFormat
-import androidx.compose.foundation.interaction.FocusInteraction
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
@@ -10,18 +8,18 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
-import kotlinx.coroutines.flow.collectLatest
 import java.text.DecimalFormatSymbols
 import java.text.ParseException
 import java.util.Locale
@@ -42,7 +40,9 @@ fun LumenTextField(
     isSingleLine: Boolean = true,
     minLines: Int = 1,
     prefix: String = "",
-    currencyLocale: Locale = Locale.US
+    currencyLocale: Locale = Locale.US,
+    shape: Shape = TextFieldDefaults.shape,
+    isIndicatorVisible: Boolean = true
 ) {
 
     val numberFormat = remember(currencyLocale) {
@@ -90,17 +90,24 @@ fun LumenTextField(
             capitalization = KeyboardCapitalization.Sentences
         ),
         keyboardActions = keyboardActions,
-        colors = TextFieldDefaults.colors(
+        colors = if (isIndicatorVisible) TextFieldDefaults.colors(
             unfocusedContainerColor = MaterialTheme.colorScheme.surface,
             focusedContainerColor = MaterialTheme.colorScheme.surface,
             focusedIndicatorColor = MaterialTheme.colorScheme.primary
+        ) else TextFieldDefaults.colors(
+            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+            focusedContainerColor = MaterialTheme.colorScheme.surface,
+            unfocusedIndicatorColor = Color.Transparent,
+            focusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent
         ),
         visualTransformation = visualTransformation,
         isError = isError,
         supportingText = supportingText,
         maxLines = Int.MAX_VALUE,
         singleLine = isSingleLine,
-        minLines = minLines
+        minLines = minLines,
+        shape = shape
     )
 }
 

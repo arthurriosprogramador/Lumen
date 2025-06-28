@@ -12,6 +12,7 @@ import com.arthurriosribeiro.lumen.model.AccountConfiguration
 import com.arthurriosribeiro.lumen.model.Currencies
 import com.arthurriosribeiro.lumen.model.Languages
 import com.arthurriosribeiro.lumen.model.RequestState
+import com.arthurriosribeiro.lumen.model.TransactionFilter
 import com.arthurriosribeiro.lumen.model.UserTransaction
 import com.arthurriosribeiro.lumen.repository.LumenRepository
 import com.arthurriosribeiro.lumen.utils.FirestoreCollectionUtils
@@ -49,6 +50,9 @@ class MainViewModel @Inject constructor(
 
     private val _transactions: MutableStateFlow<RequestState<List<UserTransaction>>?> = MutableStateFlow(null)
     val transactions: StateFlow<RequestState<List<UserTransaction>>?> = _transactions
+
+    private val _selectedFilter: MutableStateFlow<TransactionFilter> = MutableStateFlow(TransactionFilter())
+    val selectedFilter: StateFlow<TransactionFilter> = _selectedFilter
 
     suspend fun getAccountConfig() : AccountConfiguration? {
             val config = runCatching {

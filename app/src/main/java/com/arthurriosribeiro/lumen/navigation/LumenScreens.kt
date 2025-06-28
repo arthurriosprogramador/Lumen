@@ -15,5 +15,6 @@ enum class LumenScreens(val icon: ImageVector? = null) {
     TRANSACTIONS_SCREEN(Icons.Rounded.Receipt),
     USER_CONFIGURATION_SCREEN(Icons.Rounded.Person),
     SIGN_UP_SCREEN,
-    LOG_IN_SCREEN
+    LOG_IN_SCREEN,
+    FILTER_SCREEN
 }

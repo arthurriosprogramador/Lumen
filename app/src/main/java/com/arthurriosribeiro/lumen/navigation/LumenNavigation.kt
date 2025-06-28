@@ -21,6 +21,7 @@ import com.arthurriosribeiro.lumen.R
 import com.arthurriosribeiro.lumen.model.Currencies
 import com.arthurriosribeiro.lumen.model.Languages
 import com.arthurriosribeiro.lumen.screens.addtransaction.AddTransactionsScreen
+import com.arthurriosribeiro.lumen.screens.filter.FilterScreen
 import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
 import com.arthurriosribeiro.lumen.screens.home.HomeScreen
 import com.arthurriosribeiro.lumen.screens.home.tabs.UserConfigurationScreen
@@ -78,16 +79,6 @@ fun LumenNavigation() {
 
     val activity = (context as ComponentActivity)
 
-    val defaultEnterTransition = slideInHorizontally(
-            initialOffsetX = { it },
-            animationSpec = tween(durationMillis = 1000)
-        )
-
-    val defaultExitTransition = slideOutVertically(
-            targetOffsetY = { it },
-            animationSpec = tween(durationMillis = 1000)
-        )
-
     val verticalEnterTransition = slideInVertically(
             initialOffsetY = { it },
             animationSpec = tween(durationMillis = 1000)
@@ -135,6 +126,14 @@ fun LumenNavigation() {
                 exitTransition = { verticalExitTransition }
             ) {
                 AddTransactionsScreen(navController, mainViewModel)
+            }
+
+            composable(
+                LumenScreens.FILTER_SCREEN.name,
+                enterTransition = { verticalEnterTransition },
+                exitTransition = { verticalExitTransition }
+            ) {
+                FilterScreen()
             }
         }
     }
