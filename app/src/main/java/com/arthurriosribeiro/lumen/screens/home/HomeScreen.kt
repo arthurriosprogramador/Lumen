@@ -126,7 +126,7 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel, authViewM
         ) {
             when (it) {
                 0 -> FinanceTrackTabScreen(viewModel)
-                1 -> TransactionsTabScreen(viewModel)
+                1 -> TransactionsTabScreen(navController, viewModel)
                 2 -> UserConfigurationScreen(navController, viewModel, authViewModel)
             }
         }

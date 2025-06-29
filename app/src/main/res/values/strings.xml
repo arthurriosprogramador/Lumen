@@ -1,11 +1,12 @@
 <resources>
     <string name="app_name">Lumen</string>
     <string name="app_description">Finance Tracker</string>
-    <string name="user_logged_off">Stranger</string>
+    <string name="user_logged_off">Outsider</string>
     <string name="chevron_right_description">Chevron right icon</string>
     <string name="arrow_back_description">Arrow back icon</string>
     <string name="close_icon_description">Close</string>
     <string name="filter_icon_description">Filter button</string>
+    <string name="delete_searched_term_icon_description">Delete searched term</string>
 
     <string name="sign_up_label">Sign up</string>
     <string name="login_label">Log in</string>
@@ -55,7 +56,7 @@
     <string name="user_configuration_portuguese_language">Portuguese</string>
     <string name="user_configuration_spanish_language">Spanish</string>
     <string name="user_configuration_selected_currency">Currency</string>
-    <string name="user_configuration_ask_login_title">Hey, Stranger!</string>
+    <string name="user_configuration_ask_login_title">Hey, Outsider!</string>
     <string name="user_configuration_ask_login_message">How about to log in or sign up to have your data saved in the server? With that you won\'t lose your data and will be able to keep shining your finances.</string>
     <string name="user_configuration_exclude_account">Exclude account and delete data</string>
     <string name="user_configuration_exclude_account_modal_title">Delete Account?</string>
@@ -92,9 +93,18 @@
 
     <!-- Transactions Tab  -->
     <string name="transactions_empty_list">You don\'t have any transaction yet. What about if you add your first one?</string>
+    <string name="transactions_filtered_empty_list">No transactions found for these filters or search terms. Please try different ones.</string>
     <string name="transactions_date_label">Date</string>
     <string name="transactions_category_label">Category</string>
     <string name="transactions_value_label">Value</string>
     <string name="transactions_description_label">Description</string>
     <string name="transactions_description_see_more_button_label">See more</string>
+    <string name="transactions_search_label">Search</string>
+
+    <!-- Transactions Tab  -->
+    <string name="filter_screen_title">Filter</string>
+    <string name="filter_transaction_type">Transaction type</string>
+    <string name="filter_transaction_category">Transaction category</string>
+    <string name="filter_transaction_value_range">Value range</string>
+    <string name="filter_transaction_date_range">Date range</string>
 </resources>

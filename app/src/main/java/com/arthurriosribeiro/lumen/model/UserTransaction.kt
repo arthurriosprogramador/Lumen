@@ -3,6 +3,7 @@ package com.arthurriosribeiro.lumen.model
 import android.os.Parcelable
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AllInclusive
 import androidx.compose.material.icons.rounded.AttachMoney
 import androidx.compose.material.icons.rounded.Book
 import androidx.compose.material.icons.rounded.Checkroom
@@ -38,7 +39,8 @@ data class UserTransaction(
 
 enum class TransactionType {
     EXPENSES,
-    INCOME
+    INCOME,
+    ALL
 }
 
 enum class TransactionCategory(val icon: ImageVector, @StringRes val label: Int) {

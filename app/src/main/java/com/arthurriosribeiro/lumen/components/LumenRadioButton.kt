@@ -52,12 +52,18 @@ fun <T>LumenRadioButton(
                             onClick = null
                         )
                         Text(
-                            text = if (it is Languages) {
-                                stringResource(viewModel?.getLanguageLabel(it.name) ?: 0)
-                            } else if(it is TransactionType) {
-                                it.name.lowercase().replaceFirstChar { char -> char.uppercaseChar() }
-                            } else {
-                                it as String
+                            text = when (it) {
+                                is Languages -> {
+                                    stringResource(viewModel?.getLanguageLabel(it.name) ?: 0)
+                                }
+
+                                is TransactionType -> {
+                                    it.name.lowercase().replaceFirstChar { char -> char.uppercaseChar() }
+                                }
+
+                                else -> {
+                                    it as String
+                                }
                             },
                             style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier.padding(start = 16.dp)
@@ -88,12 +94,18 @@ fun <T>LumenRadioButton(
                             onClick = null
                         )
                         Text(
-                            text = if (it is Languages) {
-                                stringResource(viewModel?.getLanguageLabel(it.name) ?: 0)
-                            } else if(it is TransactionType) {
-                                it.name.lowercase().replaceFirstChar { char -> char.uppercaseChar() }
-                            } else {
-                                it as String
+                            text = when (it) {
+                                is Languages -> {
+                                    stringResource(viewModel?.getLanguageLabel(it.name) ?: 0)
+                                }
+
+                                is TransactionType -> {
+                                    it.name.lowercase().replaceFirstChar { char -> char.uppercaseChar() }
+                                }
+
+                                else -> {
+                                    it as String
+                                }
                             },
                             style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier.padding(start = 16.dp)

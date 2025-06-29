@@ -14,9 +14,11 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.arthurriosribeiro.lumen.R
 import com.arthurriosribeiro.lumen.model.Currencies
 import com.arthurriosribeiro.lumen.model.Languages
@@ -129,12 +131,47 @@ fun LumenNavigation() {
             }
 
             composable(
-                LumenScreens.FILTER_SCREEN.name,
+                "${LumenScreens.FILTER_SCREEN.name}/" +
+                        "{${LumenArguments.startValue}}/" +
+                        "{${LumenArguments.endValue}}/" +
+                        "{${LumenArguments.startDate}}/" +
+                        "{${LumenArguments.endDate}}",
+                arguments = listOf(
+                    navArgument(name = LumenArguments.startValue) {
+                        type = NavType.FloatType
+                    },
+                    navArgument(name = LumenArguments.endValue) {
+                        type = NavType.FloatType
+                    },
+                    navArgument(name = LumenArguments.startDate) {
+                        type = NavType.LongType
+                    },
+                    navArgument(name = LumenArguments.endDate) {
+                        type = NavType.LongType
+                    },
+                ),
                 enterTransition = { verticalEnterTransition },
                 exitTransition = { verticalExitTransition }
             ) {
-                FilterScreen()
+                val startValue = it.arguments?.getFloat(LumenArguments.startValue)
+                val endValue = it.arguments?.getFloat(LumenArguments.endValue)
+                val startDate = it.arguments?.getLong(LumenArguments.startDate)
+                val endDate = it.arguments?.getLong(LumenArguments.endDate)
+                FilterScreen(
+                    navController,
+                    startValue ?: 0F,
+                    endValue ?: 0F,
+                    startDate ?: 0L,
+                    endDate ?: 0L
+                )
             }
         }
     }
+}
+
+object LumenArguments {
+    val startValue = "startValue"
+    val endValue = "endValue"
+    val startDate = "startDate"
+    val endDate = "endDate"
 }

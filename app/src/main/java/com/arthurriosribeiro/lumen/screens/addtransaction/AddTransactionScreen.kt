@@ -281,7 +281,7 @@ fun AddTransactionsScreen(
                 LumenRadioButton(
                     modifier = Modifier
                         .padding(top = 16.dp),
-                    options = TransactionType.entries.toList(),
+                    options = TransactionType.entries.toList().dropLast(1),
                     selectedOption = selectedTransactionType,
                     onOptionSelected = onSelectTransactionType,
                     isColumn = false
@@ -294,7 +294,7 @@ fun AddTransactionsScreen(
                     LumenDropdownMenu(
                         modifier = Modifier
                             .padding(top = 16.dp),
-                        menuOptions = TransactionCategory.entries.toList(),
+                        menuOptions = TransactionCategory.entries.toList().dropLast(1),
                         isExpanded = isCategoryDropdownMenuExpanded,
                         onIsExpandedChanged = {
                             isCategoryDropdownMenuExpanded = !isCategoryDropdownMenuExpanded

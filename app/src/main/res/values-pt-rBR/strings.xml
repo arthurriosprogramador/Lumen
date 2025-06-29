@@ -7,6 +7,7 @@
     <string name="arrow_back_description">Ícone de seta para trás</string>
     <string name="close_icon_description">Fechar</string>
     <string name="filter_icon_description">Botão de filtro</string>
+    <string name="delete_searched_term_icon_description">Excluir termo pesquisado</string>
 
     <string name="sign_up_label">Registrar-se</string>
     <string name="login_label">Entrar</string>
@@ -92,9 +93,18 @@
 
     <!-- Transactions Tab  -->
     <string name="transactions_empty_list">Você ainda não tem nenhuma transação. Que tal adicionar a sua primeira?</string>
+    <string name="transactions_filtered_empty_list">Nenhuma transação encontrada com estes filtros ou termos de busca. Tente outros.</string>
     <string name="transactions_date_label">Data</string>
     <string name="transactions_category_label">Categoria</string>
     <string name="transactions_value_label">Valor</string>
     <string name="transactions_description_label">Descrição</string>
     <string name="transactions_description_see_more_button_label">Ver mais</string>
+    <string name="transactions_search_label">Procurar</string>
+
+    <!-- Transactions Tab  -->
+    <string name="filter_screen_title">Filtro</string>
+    <string name="filter_transaction_type">Tipo de transação</string>
+    <string name="filter_transaction_category">Categoria de transação</string>
+    <string name="filter_transaction_value_range">Faixa de valores</string>
+    <string name="filter_transaction_date_range">Intervalo de datas</string>
 </resources>

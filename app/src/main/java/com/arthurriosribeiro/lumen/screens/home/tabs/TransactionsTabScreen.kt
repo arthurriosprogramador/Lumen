@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.SettingsInputComponent
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
@@ -41,6 +42,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.arthurriosribeiro.lumen.R
 import com.arthurriosribeiro.lumen.components.LumenBottomSheet
 import com.arthurriosribeiro.lumen.components.LumenCircularProgressIndicator
@@ -52,6 +54,7 @@ import com.arthurriosribeiro.lumen.model.RequestState
 import com.arthurriosribeiro.lumen.model.TransactionCategory
 import com.arthurriosribeiro.lumen.model.TransactionType
 import com.arthurriosribeiro.lumen.model.UserTransaction
+import com.arthurriosribeiro.lumen.navigation.LumenScreens
 import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
 import com.arthurriosribeiro.lumen.utils.formatDate
 import com.arthurriosribeiro.lumen.utils.formatDoubleAsCurrency
@@ -61,7 +64,7 @@ import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TransactionsTabScreen(viewModel: MainViewModel) {
+fun TransactionsTabScreen(navController: NavController, viewModel: MainViewModel) {
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -95,8 +98,10 @@ fun TransactionsTabScreen(viewModel: MainViewModel) {
 
     val transactionFiltered = remember(transactions, searchQuery.value) {
         transactions?.filter {
-            it.title?.lowercase()?.contains(searchQuery.value.lowercase(), ignoreCase = false) == true
-                    || it.description?.lowercase()?.contains(searchQuery.value.lowercase(), ignoreCase = false) == true
+            it.title?.lowercase()
+                ?.contains(searchQuery.value.lowercase(), ignoreCase = false) == true
+                    || it.description?.lowercase()
+                ?.contains(searchQuery.value.lowercase(), ignoreCase = false) == true
         }
     }
 
@@ -147,59 +152,78 @@ fun TransactionsTabScreen(viewModel: MainViewModel) {
             }
 
             if (transactionsState is RequestState.Success) {
-                if (transactions.isNullOrEmpty()) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            stringResource(R.string.transactions_empty_list),
-                            style = MaterialTheme.typography.headlineSmall,
-                            modifier = Modifier.padding(24.dp)
-                        )
-                    }
-                } else {
-                    Column(
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                ) {
+                    Row(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding)
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 24.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            LumenTextField(
-                                modifier = Modifier,
-                                value = searchQuery,
-                                placeHolder = {
-                                    Text(
-                                        "Search"
+                        LumenTextField(
+                            modifier = Modifier,
+                            value = searchQuery,
+                            placeHolder = {
+                                Text(stringResource(R.string.transactions_search_label))
+                            },
+                            shape = RoundedCornerShape(24.dp),
+                            isIndicatorVisible = false,
+                            trailingIcon =  {
+                                if (searchQuery.value.isNotEmpty()) IconButton(
+                                    onClick = {
+                                        searchQuery.value = ""
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Close,
+                                        contentDescription = stringResource(R.string.delete_searched_term_icon_description)
                                     )
-                                },
-                                shape = RoundedCornerShape(24.dp),
-                                isIndicatorVisible = false
-                            )
-                            IconButton(
-                                onClick = {}
-                            ) {
-                                Icon(
-                                    Icons.Rounded.SettingsInputComponent,
-                                    stringResource(R.string.filter_icon_description)
-                                )
+                                }
                             }
+                        )
+                        IconButton(
+                            onClick = {
+                                val minValue = transactions?.minBy { it.value ?: 0.0 }?.value?.toFloat()
+                                val maxValue = transactions?.maxBy { it.value ?: 0.0 }?.value?.toFloat()
+                                val minDate = transactions?.minBy { it.timestamp ?: 0L }?.timestamp
+                                val maxDate = transactions?.maxBy { it.timestamp ?: 0L }?.timestamp
+                                navController.navigate(
+                                    "${LumenScreens.FILTER_SCREEN.name}/$minValue/$maxValue/$minDate/$maxDate")
+                            }
+                        ) {
+                            Icon(
+                                Icons.Rounded.SettingsInputComponent,
+                                stringResource(R.string.filter_icon_description)
+                            )
                         }
+                    }
+                    if (transactions.isNullOrEmpty() || transactionFiltered.isNullOrEmpty()) {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                stringResource(if (transactions.isNullOrEmpty()) R.string.transactions_empty_list else R.string.transactions_filtered_empty_list),
+                                style = MaterialTheme.typography.headlineSmall,
+                                modifier = Modifier.padding(24.dp)
+                            )
+                        }
+                    } else {
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(horizontal = 24.dp)
                         ) {
-                            val listToShow = if (searchQuery.value.isBlank()) transactions else transactionFiltered
+                            val listToShow =
+                                if (searchQuery.value.isBlank()) transactions else transactionFiltered
 
-                            items(items = listToShow ?: emptyList()) {
-                                val isDescriptionOverflowed = descriptionOverflowMap[it.uniqueId] == true
+                            items(items = listToShow ?: emptyList()) { it ->
+                                val isDescriptionOverflowed =
+                                    descriptionOverflowMap[it.uniqueId] == true
                                 ElevatedCard(
                                     modifier = Modifier
                                         .padding(vertical = 16.dp)
@@ -229,8 +253,8 @@ fun TransactionsTabScreen(viewModel: MainViewModel) {
                                                     shape = RoundedCornerShape(12.dp)
                                                 ) {
                                                     Text(
-                                                        it.type.lowercase().replaceFirstChar {
-                                                            it.titlecase()
+                                                        it.type.lowercase().replaceFirstChar { char ->
+                                                            char.titlecase()
                                                         },
                                                         style = MaterialTheme.typography.bodySmall.copy(
                                                             color = MaterialTheme.colorScheme.onSecondary,
@@ -246,7 +270,9 @@ fun TransactionsTabScreen(viewModel: MainViewModel) {
                                                 ) {
                                                     Icon(
                                                         modifier = Modifier.padding(8.dp),
-                                                        imageVector = TransactionCategory.valueOf(category).icon,
+                                                        imageVector = TransactionCategory.valueOf(
+                                                            category
+                                                        ).icon,
                                                         contentDescription = ""
                                                     )
                                                 }
@@ -265,9 +291,12 @@ fun TransactionsTabScreen(viewModel: MainViewModel) {
                                                 maxLines = 2,
                                                 overflow = TextOverflow.Ellipsis,
                                                 onTextLayout = { textLayoutResult ->
-                                                    descriptionOverflowMap = descriptionOverflowMap.toMutableMap().apply {
-                                                        this[it.uniqueId] = textLayoutResult.hasVisualOverflow
-                                                    }
+                                                    descriptionOverflowMap =
+                                                        descriptionOverflowMap.toMutableMap()
+                                                            .apply {
+                                                                this[it.uniqueId] =
+                                                                    textLayoutResult.hasVisualOverflow
+                                                            }
                                                 }
                                             )
                                             if (isDescriptionOverflowed) {
@@ -303,16 +332,15 @@ fun TransactionsTabScreen(viewModel: MainViewModel) {
                                             ).formatDate(viewModel.getLocaleByLanguage()),
                                             isDividerToggled = true
                                         )
-                                        LumenInfoRow(
-                                            modifier = Modifier
-                                                .padding(top = 5.dp),
-                                            label = stringResource(R.string.transactions_category_label),
-                                            infoText = it.categoryName?.lowercase()
-                                                ?.replaceFirstChar {
-                                                    it.titlecase()
-                                                }?.replace("_", " ").orDash(),
-                                            isDividerToggled = true
-                                        )
+                                        it.categoryName?.let { category ->
+                                            LumenInfoRow(
+                                                modifier = Modifier
+                                                    .padding(top = 5.dp),
+                                                label = stringResource(R.string.transactions_category_label),
+                                                infoText = stringResource(TransactionCategory.valueOf(category).label),
+                                                isDividerToggled = true
+                                            )
+                                        }
                                         LumenInfoRow(
                                             modifier = Modifier
                                                 .padding(top = 5.dp),
