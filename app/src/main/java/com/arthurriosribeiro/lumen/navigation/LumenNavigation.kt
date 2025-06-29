@@ -3,7 +3,6 @@ package com.arthurriosribeiro.lumen.navigation
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
@@ -24,13 +23,12 @@ import com.arthurriosribeiro.lumen.model.Currencies
 import com.arthurriosribeiro.lumen.model.Languages
 import com.arthurriosribeiro.lumen.screens.addtransaction.AddTransactionsScreen
 import com.arthurriosribeiro.lumen.screens.filter.FilterScreen
-import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
 import com.arthurriosribeiro.lumen.screens.home.HomeScreen
-import com.arthurriosribeiro.lumen.screens.home.tabs.UserConfigurationScreen
 import com.arthurriosribeiro.lumen.screens.login.LogInScreen
 import com.arthurriosribeiro.lumen.screens.signup.SignUpScreen
 import com.arthurriosribeiro.lumen.screens.splash.SplashScreen
 import com.arthurriosribeiro.lumen.screens.viewmodel.AuthViewModel
+import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
 import com.arthurriosribeiro.lumen.utils.LocalActivity
 import com.arthurriosribeiro.lumen.utils.languages.LocaleUtils
 import java.util.Locale
@@ -132,31 +130,31 @@ fun LumenNavigation() {
 
             composable(
                 "${LumenScreens.FILTER_SCREEN.name}/" +
-                        "{${LumenArguments.startValue}}/" +
-                        "{${LumenArguments.endValue}}/" +
-                        "{${LumenArguments.startDate}}/" +
-                        "{${LumenArguments.endDate}}",
+                        "{${LumenArguments.START_VALUE}}/" +
+                        "{${LumenArguments.END_VALUE}}/" +
+                        "{${LumenArguments.START_DATE}}/" +
+                        "{${LumenArguments.END_DATE}}",
                 arguments = listOf(
-                    navArgument(name = LumenArguments.startValue) {
+                    navArgument(name = LumenArguments.START_VALUE) {
                         type = NavType.FloatType
                     },
-                    navArgument(name = LumenArguments.endValue) {
+                    navArgument(name = LumenArguments.END_VALUE) {
                         type = NavType.FloatType
                     },
-                    navArgument(name = LumenArguments.startDate) {
+                    navArgument(name = LumenArguments.START_DATE) {
                         type = NavType.LongType
                     },
-                    navArgument(name = LumenArguments.endDate) {
+                    navArgument(name = LumenArguments.END_DATE) {
                         type = NavType.LongType
                     },
                 ),
                 enterTransition = { verticalEnterTransition },
                 exitTransition = { verticalExitTransition }
             ) {
-                val startValue = it.arguments?.getFloat(LumenArguments.startValue)
-                val endValue = it.arguments?.getFloat(LumenArguments.endValue)
-                val startDate = it.arguments?.getLong(LumenArguments.startDate)
-                val endDate = it.arguments?.getLong(LumenArguments.endDate)
+                val startValue = it.arguments?.getFloat(LumenArguments.START_VALUE)
+                val endValue = it.arguments?.getFloat(LumenArguments.END_VALUE)
+                val startDate = it.arguments?.getLong(LumenArguments.START_DATE)
+                val endDate = it.arguments?.getLong(LumenArguments.END_DATE)
                 FilterScreen(
                     navController,
                     startValue ?: 0F,
@@ -170,8 +168,8 @@ fun LumenNavigation() {
 }
 
 object LumenArguments {
-    val startValue = "startValue"
-    val endValue = "endValue"
-    val startDate = "startDate"
-    val endDate = "endDate"
+    const val START_VALUE = "startValue"
+    const val END_VALUE = "endValue"
+    const val START_DATE = "startDate"
+    const val END_DATE = "endDate"
 }
