@@ -1,6 +1,5 @@
 package com.arthurriosribeiro.lumen.components
 
-import android.icu.text.NumberFormat
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
@@ -20,6 +19,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
+import com.arthurriosribeiro.lumen.utils.NumberFormatProvider
 import java.text.DecimalFormatSymbols
 import java.text.ParseException
 import java.util.Locale
@@ -45,16 +45,8 @@ fun LumenTextField(
     isIndicatorVisible: Boolean = true
 ) {
 
-    val numberFormat = remember(currencyLocale) {
-        NumberFormat.getNumberInstance(currencyLocale).apply {
-            minimumFractionDigits = 2
-            maximumFractionDigits = 2
-            isGroupingUsed = true
-        }
-    }
-
     val decimalSeparator = remember(currencyLocale) {
-        DecimalFormatSymbols.getInstance(currencyLocale).decimalSeparator
+        NumberFormatProvider.getDecimalSeparator(currencyLocale)
     }
 
     TextField(
@@ -65,9 +57,9 @@ fun LumenTextField(
                         .replace(Regex("[^\\d$decimalSeparator]"), "")
                 } else {
                     try {
-                        val parsedNumber = numberFormat.parse(value.value)
+                        val parsedNumber = NumberFormatProvider.getNumberFormat(currencyLocale).parse(value.value)
                         if (parsedNumber != null) {
-                            value.value = numberFormat.format(parsedNumber)
+                            value.value = NumberFormatProvider.getNumberFormat(currencyLocale).format(parsedNumber)
                         }
                     } catch (_: ParseException) {}
                 }

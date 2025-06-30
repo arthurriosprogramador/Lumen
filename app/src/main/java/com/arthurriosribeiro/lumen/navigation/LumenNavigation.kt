@@ -157,6 +157,7 @@ fun LumenNavigation() {
                 val endDate = it.arguments?.getLong(LumenArguments.END_DATE)
                 FilterScreen(
                     navController,
+                    mainViewModel,
                     startValue ?: 0F,
                     endValue ?: 0F,
                     startDate ?: 0L,

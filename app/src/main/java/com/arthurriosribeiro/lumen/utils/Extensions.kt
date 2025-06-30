@@ -5,7 +5,7 @@ import android.icu.text.NumberFormat
 import com.arthurriosribeiro.lumen.model.TransactionType
 import com.arthurriosribeiro.lumen.model.UserTransaction
 import com.google.firebase.firestore.DocumentSnapshot
-import java.text.ParseException
+import java.text.DecimalFormatSymbols
 import java.util.Date
 import java.util.Locale
 
@@ -39,11 +39,17 @@ fun String?.orDash() : String {
 }
 
 fun Double.formatDoubleAsCurrency(locale: Locale, prefix: String) : String{
-    val numberFormat = NumberFormat.getNumberInstance(locale).apply {
+
+
+    return  "$prefix ${NumberFormatProvider.getNumberFormat(locale).format(this)}"
+}
+
+object NumberFormatProvider {
+    fun getNumberFormat(locale: Locale): NumberFormat = NumberFormat.getNumberInstance(locale).apply {
         minimumFractionDigits = 2
         maximumFractionDigits = 2
         isGroupingUsed = true
     }
 
-    return  "$prefix ${numberFormat.format(this)}"
+    fun getDecimalSeparator(locale: Locale) = DecimalFormatSymbols.getInstance(locale).decimalSeparator
 }

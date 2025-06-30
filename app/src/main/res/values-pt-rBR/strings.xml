@@ -107,4 +107,6 @@
     <string name="filter_transaction_category">Categoria de transação</string>
     <string name="filter_transaction_value_range">Faixa de valores</string>
     <string name="filter_transaction_date_range">Intervalo de datas</string>
+    <string name="filter_transaction_initial_date">Data inicial</string>
+    <string name="filter_transaction_final_date">Data final</string>
 </resources>
