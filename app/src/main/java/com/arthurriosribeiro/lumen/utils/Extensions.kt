@@ -61,6 +61,9 @@ fun Double.formatDoubleAsCurrency(locale: Locale, prefix: String) : String{
     return  "$prefix ${NumberFormatProvider.getNumberFormat(locale).format(this)}"
 }
 
+fun Float.roundToTwoDecimals(): Float =
+    toBigDecimal().setScale(2, java.math.RoundingMode.HALF_UP).toFloat()
+
 object NumberFormatProvider {
     fun getNumberFormat(locale: Locale): NumberFormat = NumberFormat.getNumberInstance(locale).apply {
         minimumFractionDigits = 2

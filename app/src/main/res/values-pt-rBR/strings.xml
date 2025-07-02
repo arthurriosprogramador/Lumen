@@ -111,4 +111,5 @@
     <string name="filter_transaction_final_date">Data final</string>
     <string name="filter_transaction_apply_filter">Aplicar filtro</string>
     <string name="filter_transaction_clear_filter">Limpar filtro</string>
+    <string name="filter_transaction_filters_applied">Filtros aplicados</string>
 </resources>

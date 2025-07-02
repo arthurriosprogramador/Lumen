@@ -54,8 +54,8 @@ class MainViewModel @Inject constructor(
     private val _transactions: MutableStateFlow<RequestState<List<UserTransaction>>?> = MutableStateFlow(null)
     val transactions: StateFlow<RequestState<List<UserTransaction>>?> = _transactions
 
-    private val _selectedFilter: MutableStateFlow<TransactionFilter> = MutableStateFlow(TransactionFilter())
-    val selectedFilter: StateFlow<TransactionFilter> = _selectedFilter
+    private val _selectedFilter: MutableStateFlow<TransactionFilter?> = MutableStateFlow(null)
+    val selectedFilter: StateFlow<TransactionFilter?> = _selectedFilter
 
     suspend fun getAccountConfig() : AccountConfiguration? {
             val config = runCatching {
@@ -274,13 +274,13 @@ class MainViewModel @Inject constructor(
     }
 
     fun applyFilter(
-        dateRange: Pair<Date, Date>? = null,
-        valueRange: Pair<Double, Double>? = null,
+        timestampRange: LongRange? = null,
+        valueRange: ClosedFloatingPointRange<Double>? = null,
         transactionType: TransactionType? = null,
         transactionCategory: List<TransactionCategory>? = null
     ) {
         _selectedFilter.value = TransactionFilter(
-            dateRange = dateRange,
+            timestampRange = timestampRange,
             valueRange = valueRange,
             transactionType = transactionType,
             transactionCategory = transactionCategory
@@ -288,7 +288,22 @@ class MainViewModel @Inject constructor(
     }
 
     fun clearFilter() {
-        _selectedFilter.value = TransactionFilter()
+        _selectedFilter.value = null
+    }
+
+    fun countFilter() : Int{
+        var counter = 0
+        if (_selectedFilter.value == null) {
+            counter = 0
+        } else {
+            if (_selectedFilter.value?.transactionType != null &&
+                _selectedFilter.value?.transactionType != TransactionType.ALL) counter++
+            if (_selectedFilter.value?.transactionCategory != null) counter++
+            if (_selectedFilter.value?.valueRange != null) counter++
+            if (_selectedFilter.value?.timestampRange != null) counter++
+        }
+
+        return counter
     }
 
     private fun handleExceptionMessage(exceptionMessage: String?, context: Context) : RequestState.Error {

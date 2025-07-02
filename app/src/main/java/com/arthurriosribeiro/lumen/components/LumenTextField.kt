@@ -20,6 +20,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
 import com.arthurriosribeiro.lumen.utils.NumberFormatProvider
+import com.arthurriosribeiro.lumen.utils.roundToTwoDecimals
 import java.text.DecimalFormatSymbols
 import java.text.ParseException
 import java.util.Locale
@@ -58,8 +59,9 @@ fun LumenTextField(
                 } else {
                     try {
                         val parsedNumber = NumberFormatProvider.getNumberFormat(currencyLocale).parse(value.value)
-                        if (parsedNumber != null) {
-                            value.value = NumberFormatProvider.getNumberFormat(currencyLocale).format(parsedNumber)
+                        val roundedNumber = parsedNumber?.toFloat()?.roundToTwoDecimals()
+                        if (roundedNumber != null) {
+                            value.value = NumberFormatProvider.getNumberFormat(currencyLocale).format(roundedNumber)
                         }
                     } catch (_: ParseException) {}
                 }

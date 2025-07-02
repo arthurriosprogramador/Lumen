@@ -1,5 +1,8 @@
 package com.arthurriosribeiro.lumen.screens.home.tabs
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -7,9 +10,12 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ChevronRight
@@ -20,6 +26,7 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
@@ -38,6 +45,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -109,12 +117,25 @@ fun TransactionsTabScreen(navController: NavController, viewModel: MainViewModel
         mutableStateOf(transactions?.maxBy { it.timestamp ?: 0L }?.timestamp)
     }
 
-    val transactionFiltered = remember(transactions, searchQuery.value, viewModel.selectedFilter.collectAsState()) {
-        val selectedFilterValue = viewModel.selectedFilter.value
+    val selectedFilterValue = viewModel.selectedFilter.collectAsState().value
+
+    val transactionFiltered = remember(transactions, searchQuery.value, selectedFilterValue) {
         transactions?.filter {
-            it.title?.lowercase()?.contains(searchQuery.value.lowercase(), ignoreCase = false) == true
+            val matchesSearch = it.title?.lowercase()?.contains(searchQuery.value.lowercase(), ignoreCase = false) == true
                     || it.description?.lowercase()?.contains(searchQuery.value.lowercase(), ignoreCase = false) == true
-                    || TransactionType.valueOf(it.type) == selectedFilterValue.transactionType
+
+            val matchesType = selectedFilterValue?.transactionType == null ||
+                    (if (selectedFilterValue.transactionType == TransactionType.ALL)
+                        TransactionType.valueOf(it.type) == TransactionType.INCOME || TransactionType.valueOf(it.type) == TransactionType.EXPENSES
+            else TransactionType.valueOf(it.type) == selectedFilterValue.transactionType)
+
+            val matchesValueRange = selectedFilterValue?.valueRange == null || (it.value ?: 0.0) in selectedFilterValue.valueRange
+
+            val matchesDateRange = selectedFilterValue?.timestampRange == null || (it.timestamp ?: 0L) in selectedFilterValue.timestampRange
+
+            val matchesCategory = selectedFilterValue?.transactionCategory.isNullOrEmpty() || it.categoryName?.let {  selectedFilterValue?.transactionCategory?.any { category -> category == TransactionCategory.valueOf(it) }  } == true
+
+            matchesSearch && matchesType && matchesValueRange && matchesDateRange && matchesCategory
         }
     }
 
@@ -209,14 +230,80 @@ fun TransactionsTabScreen(navController: NavController, viewModel: MainViewModel
                             )
                         }
                     }
-                    if (transactions.isNullOrEmpty() || transactionFiltered.isNullOrEmpty()) {
+                    if (selectedFilterValue != null) {
+                        Box(
+                            modifier = Modifier
+                                .padding(top = 16.dp),
+                            contentAlignment = Alignment.TopEnd
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .padding(start = 24.dp)
+                                    .border(
+                                        width = 2.dp,
+                                        brush = Brush.linearGradient(
+                                            listOf(
+                                                MaterialTheme.colorScheme.primary,
+                                                MaterialTheme.colorScheme.secondary
+                                            )
+                                        ),
+                                        shape = RoundedCornerShape(24.dp)
+                                    )
+                                    .padding(8.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .clickable {
+                                            viewModel.clearFilter()
+                                        }
+                                ) {
+                                    Text(stringResource(R.string.filter_transaction_filters_applied))
+                                    Icon(
+                                        modifier = Modifier
+                                            .size(20.dp)
+                                            .align(Alignment.CenterVertically),
+                                        imageVector = Icons.Rounded.Close,
+                                        contentDescription = stringResource(R.string.filter_transaction_clear_filter)
+                                    )
+                                }
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .offset(x = 6.dp, y = (-8).dp)
+                                    .background(
+                                        color = MaterialTheme.colorScheme.secondary,
+                                        shape = CircleShape,
+                                    )
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    viewModel.countFilter().toString(),
+                                    color = MaterialTheme.colorScheme.onSecondary,
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                            }
+                        }
+                    }
+                    if (transactions.isNullOrEmpty()) {
                         Column(
                             modifier = Modifier.fillMaxSize(),
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                stringResource(if (transactions.isNullOrEmpty()) R.string.transactions_empty_list else R.string.transactions_filtered_empty_list),
+                                stringResource(R.string.transactions_empty_list),
+                                style = MaterialTheme.typography.headlineSmall,
+                                modifier = Modifier.padding(24.dp)
+                            )
+                        }
+                    } else if (transactionFiltered.isNullOrEmpty() && selectedFilterValue != null) {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                stringResource(R.string.transactions_filtered_empty_list),
                                 style = MaterialTheme.typography.headlineSmall,
                                 modifier = Modifier.padding(24.dp)
                             )
@@ -228,7 +315,7 @@ fun TransactionsTabScreen(navController: NavController, viewModel: MainViewModel
                                 .padding(horizontal = 24.dp)
                         ) {
                             val listToShow =
-                                if (searchQuery.value.isBlank()) transactions else transactionFiltered
+                                if (searchQuery.value.isBlank() && selectedFilterValue == null) transactions else transactionFiltered
 
                             items(items = listToShow ?: emptyList()) { it ->
                                 val isDescriptionOverflowed =
