@@ -12,7 +12,9 @@ import com.arthurriosribeiro.lumen.model.AccountConfiguration
 import com.arthurriosribeiro.lumen.model.Currencies
 import com.arthurriosribeiro.lumen.model.Languages
 import com.arthurriosribeiro.lumen.model.RequestState
+import com.arthurriosribeiro.lumen.model.TransactionCategory
 import com.arthurriosribeiro.lumen.model.TransactionFilter
+import com.arthurriosribeiro.lumen.model.TransactionType
 import com.arthurriosribeiro.lumen.model.UserTransaction
 import com.arthurriosribeiro.lumen.repository.LumenRepository
 import com.arthurriosribeiro.lumen.utils.FirestoreCollectionUtils
@@ -28,6 +30,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
@@ -270,6 +273,24 @@ class MainViewModel @Inject constructor(
         return false
     }
 
+    fun applyFilter(
+        dateRange: Pair<Date, Date>? = null,
+        valueRange: Pair<Double, Double>? = null,
+        transactionType: TransactionType? = null,
+        transactionCategory: List<TransactionCategory>? = null
+    ) {
+        _selectedFilter.value = TransactionFilter(
+            dateRange = dateRange,
+            valueRange = valueRange,
+            transactionType = transactionType,
+            transactionCategory = transactionCategory
+        )
+    }
+
+    fun clearFilter() {
+        _selectedFilter.value = TransactionFilter()
+    }
+
     private fun handleExceptionMessage(exceptionMessage: String?, context: Context) : RequestState.Error {
         return if (!exceptionMessage.isNullOrBlank()) RequestState.Error(exceptionMessage)
         else RequestState.Error(context.getString(R.string.default_error))
@@ -326,8 +347,6 @@ class MainViewModel @Inject constructor(
             else -> Locale.US
         }
     }
-
-    suspend fun deleteAllTransactions() = lumenRepository.deleteAllTransactions()
 
     fun clearAddTransactionState() {
         _addTransactionState.value = null

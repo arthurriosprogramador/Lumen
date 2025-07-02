@@ -6,5 +6,5 @@ data class TransactionFilter(
     val dateRange: Pair<Date, Date>? = null,
     val valueRange: Pair<Double, Double>? = null,
     val transactionType: TransactionType? = null,
-    val transactionCategory: TransactionCategory? = null
+    val transactionCategory: List<TransactionCategory>? = null
 )

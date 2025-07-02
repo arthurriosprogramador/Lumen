@@ -109,4 +109,6 @@
     <string name="filter_transaction_date_range">Intervalo de datas</string>
     <string name="filter_transaction_initial_date">Data inicial</string>
     <string name="filter_transaction_final_date">Data final</string>
+    <string name="filter_transaction_apply_filter">Aplicar filtro</string>
+    <string name="filter_transaction_clear_filter">Limpar filtro</string>
 </resources>

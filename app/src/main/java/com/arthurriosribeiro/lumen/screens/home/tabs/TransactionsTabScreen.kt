@@ -96,12 +96,25 @@ fun TransactionsTabScreen(navController: NavController, viewModel: MainViewModel
 
     val searchQuery = rememberSaveable { mutableStateOf("") }
 
-    val transactionFiltered = remember(transactions, searchQuery.value) {
+    val minValue by remember(transactions) {
+        mutableStateOf(transactions?.minBy { it.value ?: 0.0 }?.value?.toFloat())
+    }
+    val maxValue by remember(transactions) {
+        mutableStateOf(transactions?.maxBy { it.value ?: 0.0 }?.value?.toFloat())
+    }
+    val minDate by remember(transactions) {
+        mutableStateOf(transactions?.minBy { it.timestamp ?: 0L }?.timestamp)
+    }
+    val maxDate by remember(transactions) {
+        mutableStateOf(transactions?.maxBy { it.timestamp ?: 0L }?.timestamp)
+    }
+
+    val transactionFiltered = remember(transactions, searchQuery.value, viewModel.selectedFilter.collectAsState()) {
+        val selectedFilterValue = viewModel.selectedFilter.value
         transactions?.filter {
-            it.title?.lowercase()
-                ?.contains(searchQuery.value.lowercase(), ignoreCase = false) == true
-                    || it.description?.lowercase()
-                ?.contains(searchQuery.value.lowercase(), ignoreCase = false) == true
+            it.title?.lowercase()?.contains(searchQuery.value.lowercase(), ignoreCase = false) == true
+                    || it.description?.lowercase()?.contains(searchQuery.value.lowercase(), ignoreCase = false) == true
+                    || TransactionType.valueOf(it.type) == selectedFilterValue.transactionType
         }
     }
 
@@ -186,10 +199,6 @@ fun TransactionsTabScreen(navController: NavController, viewModel: MainViewModel
                         )
                         IconButton(
                             onClick = {
-                                val minValue = transactions?.minBy { it.value ?: 0.0 }?.value?.toFloat()
-                                val maxValue = transactions?.maxBy { it.value ?: 0.0 }?.value?.toFloat()
-                                val minDate = transactions?.minBy { it.timestamp ?: 0L }?.timestamp
-                                val maxDate = transactions?.maxBy { it.timestamp ?: 0L }?.timestamp
                                 navController.navigate(
                                     "${LumenScreens.FILTER_SCREEN.name}/$minValue/$maxValue/$minDate/$maxDate")
                             }

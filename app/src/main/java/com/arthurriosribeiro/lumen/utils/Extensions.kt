@@ -6,8 +6,25 @@ import com.arthurriosribeiro.lumen.model.TransactionType
 import com.arthurriosribeiro.lumen.model.UserTransaction
 import com.google.firebase.firestore.DocumentSnapshot
 import java.text.DecimalFormatSymbols
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+
+fun Long.toSystemZoneMillis(): Long {
+    val utcCalendar = Calendar.getInstance(java.util.TimeZone.getTimeZone("UTC"))
+    utcCalendar.timeInMillis = this
+
+    val localCalendar = Calendar.getInstance()
+    localCalendar.set(
+        utcCalendar.get(Calendar.YEAR),
+        utcCalendar.get(Calendar.MONTH),
+        utcCalendar.get(Calendar.DAY_OF_MONTH),
+        12, 0, 0
+    )
+    localCalendar.set(Calendar.MILLISECOND, 0)
+
+    return localCalendar.timeInMillis
+}
 
 fun Date.formatDate(locale: Locale = Locale.US) : String {
     val formatter = DateFormat.getDateInstance(DateFormat.MEDIUM, locale)

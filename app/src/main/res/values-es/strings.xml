@@ -109,4 +109,6 @@
     <string name="filter_transaction_date_range">Rango de fechas</string>
     <string name="filter_transaction_initial_date">Fecha inicial</string>
     <string name="filter_transaction_final_date">Fecha final</string>
+    <string name="filter_transaction_apply_filter">Aplicar filtro</string>
+    <string name="filter_transaction_clear_filter">Borrar filtro</string>
 </resources>

@@ -60,6 +60,7 @@ import com.arthurriosribeiro.lumen.model.UserTransaction
 import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
 import com.arthurriosribeiro.lumen.utils.NetworkUtils
 import com.arthurriosribeiro.lumen.utils.formatDate
+import com.arthurriosribeiro.lumen.utils.toSystemZoneMillis
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Date
@@ -167,7 +168,7 @@ fun AddTransactionsScreen(
                         TextButton(
                             onClick = {
                                 datePickerState.selectedDateMillis?.let {
-                                    timestamp.longValue = it
+                                    timestamp.longValue = it.toSystemZoneMillis()
                                 }
                                 isDatePickerDialogOpened = false
                             }

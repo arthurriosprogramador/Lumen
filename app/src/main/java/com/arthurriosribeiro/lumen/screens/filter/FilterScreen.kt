@@ -1,8 +1,8 @@
 package com.arthurriosribeiro.lumen.screens.filter
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,12 +12,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -42,8 +48,10 @@ import com.arthurriosribeiro.lumen.model.TransactionType
 import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
 import com.arthurriosribeiro.lumen.utils.NumberFormatProvider
 import com.arthurriosribeiro.lumen.utils.formatDate
+import com.arthurriosribeiro.lumen.utils.toSystemZoneMillis
 import java.util.Date
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilterScreen(
     navController: NavController,
@@ -72,11 +80,19 @@ fun FilterScreen(
     val minText = remember { mutableStateOf(selectedRange.value.start.toString()) }
     val maxText = remember { mutableStateOf(selectedRange.value.endInclusive.toString()) }
 
+    val datePickerState = rememberDatePickerState()
     var isInitialDatePickerDialogOpened by rememberSaveable {
         mutableStateOf(false)
     }
     val initialTimestamp = rememberSaveable {
-        mutableLongStateOf(0L)
+        mutableLongStateOf(startDate)
+    }
+
+    var isFinalDatePickerDialogOpened by rememberSaveable {
+        mutableStateOf(false)
+    }
+    val finalTimestamp = rememberSaveable {
+        mutableLongStateOf(endDate)
     }
 
     Scaffold(
@@ -99,121 +115,252 @@ fun FilterScreen(
             })
         },
     ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .padding(innerPadding)
-                .padding(horizontal = 24.dp)
-                .fillMaxSize()
-        ) {
-            item {
-                Column {
-                    Text(
-                        stringResource(R.string.filter_transaction_type),
-                        modifier = Modifier.padding(top = 24.dp),
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-                    LumenRadioButton(
-                        modifier = Modifier,
-                        options = TransactionType.entries.toList(),
-                        selectedOption = selectedType,
-                        onOptionSelected = onTypeSelected,
-                    )
-                }
-            }
-            item {
-                Column {
-                    Text(
-                        stringResource(R.string.filter_transaction_category),
-                        modifier = Modifier.padding(top = 24.dp),
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-                    TransactionCategoriesCheckboxGrid(
-                        modifier = Modifier.padding(top = 16.dp),
-                        items = TransactionCategory.entries.toList(),
-                        selectedItems = selectedCategory,
-                        onSelectionChange = {
-                            if (it in selectedCategory) selectedCategory.remove(it) else selectedCategory.add(it)
+        Box {
+
+            if (isInitialDatePickerDialogOpened) {
+                DatePickerDialog(
+                    onDismissRequest = { isInitialDatePickerDialogOpened = false },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                datePickerState.selectedDateMillis?.let {
+                                    initialTimestamp.longValue = it.toSystemZoneMillis()
+                                }
+                                isInitialDatePickerDialogOpened = false
+                            }
+                        ) {
+                            Text(stringResource(R.string.confirm_button_label))
                         }
-                    )
-                }
-            }
-            item {
-                Column {
-                    Text(
-                        stringResource(R.string.filter_transaction_value_range),
-                        modifier = Modifier.padding(top = 24.dp),
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-                    RangeSlider(
-                        modifier = Modifier.padding(top = 16.dp),
-                        value = selectedRange.value,
-                        onValueChange = {
-                            selectedRange.value = it
-                            minText.value = numberFormat.format(it.start)
-                            maxText.value = numberFormat.format(it.endInclusive)
-                        },
-                        valueRange = startValue..endValue,
-                        steps = 0,
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(24.dp)
-                    ) {
-                        LumenTextField(
-                            modifier = Modifier
-                                .weight(1F),
-                            value = minText,
-                            placeHolder = { Text("Min") },
-                            prefix = viewModel.getPrefixByCurrency(),
-                            keyboardType = KeyboardType.Number,
-                            currencyLocale = viewModel.getLocaleByCurrency()
-                        )
-                        LumenTextField(
-                            modifier = Modifier
-                                .weight(1F),
-                            value = maxText,
-                            placeHolder = { Text("Min") },
-                            prefix = viewModel.getPrefixByCurrency(),
-                            keyboardType = KeyboardType.Number,
-                            currencyLocale = viewModel.getLocaleByCurrency()
-                        )
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = { isInitialDatePickerDialogOpened = false }
+                        ) {
+                            Text(stringResource(R.string.cancel_button_label))
+                        }
                     }
+                ) {
+                    DatePicker(state = datePickerState)
                 }
             }
 
-            item {
-                Column {
-                    Text(
-                        stringResource(R.string.filter_transaction_initial_date),
-                        modifier = Modifier.padding(top = 24.dp),
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-                    Row(
-                        modifier = Modifier.padding(top = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceAround
-                    ) {
-                        Button(
+            if (isFinalDatePickerDialogOpened) {
+                DatePickerDialog(
+                    onDismissRequest = { isFinalDatePickerDialogOpened = false },
+                    confirmButton = {
+                        TextButton(
                             onClick = {
-                                isInitialDatePickerDialogOpened = true
+                                datePickerState.selectedDateMillis?.let {
+                                    finalTimestamp.longValue = it.toSystemZoneMillis()
+                                }
+                                isFinalDatePickerDialogOpened = false
                             }
                         ) {
-                            Text(stringResource(R.string.add_transactions_transaction_select_date_label))
+                            Text(stringResource(R.string.confirm_button_label))
                         }
-                        if (initialTimestamp.longValue > 0) {
-                            Text(
-                                stringResource(
-                                    R.string.add_transactions_transaction_selected_date_label,
-                                    Date(initialTimestamp.longValue).formatDate(
-                                        viewModel.getLocaleByLanguage()
-                                    )
-                                ),
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = { isFinalDatePickerDialogOpened = false }
+                        ) {
+                            Text(stringResource(R.string.cancel_button_label))
+                        }
+                    }
+                ) {
+                    DatePicker(state = datePickerState)
+                }
+            }
+
+            LazyColumn(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .padding(horizontal = 24.dp)
+                    .fillMaxSize()
+            ) {
+                item {
+                    Column {
+                        Text(
+                            stringResource(R.string.filter_transaction_type),
+                            modifier = Modifier.padding(top = 24.dp),
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                        LumenRadioButton(
+                            modifier = Modifier,
+                            options = TransactionType.entries.toList(),
+                            selectedOption = selectedType,
+                            onOptionSelected = onTypeSelected,
+                        )
+                    }
+                }
+                item {
+                    Column {
+                        Text(
+                            stringResource(R.string.filter_transaction_category),
+                            modifier = Modifier.padding(top = 24.dp),
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                        TransactionCategoriesCheckboxGrid(
+                            modifier = Modifier.padding(top = 16.dp),
+                            items = TransactionCategory.entries.toList(),
+                            selectedItems = selectedCategory,
+                            onSelectionChange = {
+                                if (it in selectedCategory) selectedCategory.remove(it) else selectedCategory.add(
+                                    it
+                                )
+                            }
+                        )
+                    }
+                }
+                item {
+                    Column {
+                        Text(
+                            stringResource(R.string.filter_transaction_value_range),
+                            modifier = Modifier.padding(top = 24.dp),
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                        RangeSlider(
+                            modifier = Modifier.padding(top = 16.dp),
+                            value = selectedRange.value,
+                            onValueChange = {
+                                selectedRange.value = it
+                                minText.value = numberFormat.format(it.start)
+                                maxText.value = numberFormat.format(it.endInclusive)
+                            },
+                            valueRange = startValue..endValue,
+                            steps = 0,
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(24.dp)
+                        ) {
+                            LumenTextField(
                                 modifier = Modifier
-                                    .padding(start = 16.dp)
+                                    .weight(1F),
+                                value = minText,
+                                placeHolder = { Text("Min") },
+                                prefix = viewModel.getPrefixByCurrency(),
+                                keyboardType = KeyboardType.Number,
+                                currencyLocale = viewModel.getLocaleByCurrency()
+                            )
+                            LumenTextField(
+                                modifier = Modifier
+                                    .weight(1F),
+                                value = maxText,
+                                placeHolder = { Text("Min") },
+                                prefix = viewModel.getPrefixByCurrency(),
+                                keyboardType = KeyboardType.Number,
+                                currencyLocale = viewModel.getLocaleByCurrency()
                             )
                         }
                     }
                 }
+
+                item {
+                    Column {
+                        Text(
+                            stringResource(R.string.filter_transaction_initial_date),
+                            modifier = Modifier.padding(top = 24.dp),
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                        Row(
+                            modifier = Modifier.padding(top = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceAround
+                        ) {
+                            Button(
+                                onClick = {
+                                    isInitialDatePickerDialogOpened = true
+                                }
+                            ) {
+                                Text(stringResource(R.string.add_transactions_transaction_select_date_label))
+                            }
+                            if (initialTimestamp.longValue > 0) {
+                                Text(
+                                    stringResource(
+                                        R.string.add_transactions_transaction_selected_date_label,
+                                        Date(initialTimestamp.longValue).formatDate(
+                                            viewModel.getLocaleByLanguage()
+                                        )
+                                    ),
+                                    modifier = Modifier
+                                        .padding(start = 16.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    Column {
+                        Text(
+                            stringResource(R.string.filter_transaction_final_date),
+                            modifier = Modifier.padding(top = 24.dp),
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                        Row(
+                            modifier = Modifier.padding(top = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceAround
+                        ) {
+                            Button(
+                                onClick = {
+                                    isFinalDatePickerDialogOpened = true
+                                }
+                            ) {
+                                Text(stringResource(R.string.add_transactions_transaction_select_date_label))
+                            }
+                            if (finalTimestamp.longValue > 0) {
+                                Text(
+                                    stringResource(
+                                        R.string.add_transactions_transaction_selected_date_label,
+                                        Date(finalTimestamp.longValue).formatDate(
+                                            viewModel.getLocaleByLanguage()
+                                        )
+                                    ),
+                                    modifier = Modifier
+                                        .padding(start = 16.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        ElevatedButton(
+                            modifier = Modifier
+                                .padding(top = 36.dp),
+                            onClick = {
+                                viewModel.applyFilter(
+                                    dateRange = Pair(
+                                        Date(initialTimestamp.longValue),
+                                        Date(finalTimestamp.longValue)
+                                    ),
+                                    valueRange = Pair(startValue.toDouble(), endValue.toDouble()),
+                                    transactionType = selectedType,
+                                    transactionCategory = selectedCategory
+                                )
+                            }
+                        ) {
+                            Text(stringResource(R.string.filter_transaction_apply_filter))
+                        }
+
+                        ElevatedButton(
+                            modifier = Modifier
+                                .padding(vertical = 16.dp),
+                            onClick = {
+                                viewModel.clearFilter()
+                            }
+                        ) {
+                            Text(stringResource(R.string.filter_transaction_clear_filter))
+                        }
+                    }
+                }
+
             }
         }
     }

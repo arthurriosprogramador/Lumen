@@ -109,4 +109,6 @@
     <string name="filter_transaction_date_range">Date range</string>
     <string name="filter_transaction_initial_date">Initial date</string>
     <string name="filter_transaction_final_date">Final date</string>
+    <string name="filter_transaction_apply_filter">Apply filter</string>
+    <string name="filter_transaction_clear_filter">Clear filter</string>
 </resources>
