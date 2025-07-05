@@ -105,7 +105,8 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel, authViewM
                 FloatingActionButton(
                     shape = CircleShape,
                     onClick = {
-                        navController.navigate(LumenScreens.ADD_TRANSACTIONS_SCREEN.name)
+                        navController.navigate(
+                            "${LumenScreens.ADD_TRANSACTIONS_SCREEN.name}/null/false")
                     }
                 ) {
                     Icon(
@@ -135,7 +136,7 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel, authViewM
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.currentPage }
             .collectLatest { page ->
-                if (page == 1) {
+                if (page != 2) {
                     if (viewModel.accountConfig.value?.isUserLoggedIn == false || !isConnected) {
                         viewModel.getAllTransactionsFromSql(context)
                     } else {

@@ -19,9 +19,11 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.arthurriosribeiro.lumen.R
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 import javax.annotation.Nonnull
 
 
+@Serializable
 @Parcelize
 @Entity(tableName = "user_transactions")
 data class UserTransaction(
@@ -29,12 +31,14 @@ data class UserTransaction(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val uniqueId: String,
+    val firebaseId: String? = null,
     val title: String? = null,
     val description: String? = null,
     val value: Double? = null,
     val timestamp: Long? = null,
     val type: String = TransactionType.EXPENSES.name,
     val categoryName: String? = null,
+    var isSyncedWithFirebase: Boolean = false
 ) : Parcelable
 
 enum class TransactionType {

@@ -100,6 +100,8 @@
     <string name="transactions_description_label">Descrição</string>
     <string name="transactions_description_see_more_button_label">Ver mais</string>
     <string name="transactions_search_label">Procurar</string>
+    <string name="transactions_edit_label">Editar</string>
+    <string name="transactions_delete">Apagar</string>
 
     <!-- Transactions Tab  -->
     <string name="filter_screen_title">Filtro</string>

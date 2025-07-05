@@ -26,7 +26,6 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
@@ -68,6 +67,9 @@ import com.arthurriosribeiro.lumen.utils.formatDate
 import com.arthurriosribeiro.lumen.utils.formatDoubleAsCurrency
 import com.arthurriosribeiro.lumen.utils.orDash
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.net.URLEncoder
 import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -105,16 +107,16 @@ fun TransactionsTabScreen(navController: NavController, viewModel: MainViewModel
     val searchQuery = rememberSaveable { mutableStateOf("") }
 
     val minValue by remember(transactions) {
-        mutableStateOf(transactions?.minBy { it.value ?: 0.0 }?.value?.toFloat())
+        mutableStateOf(transactions?.minByOrNull { it.value ?: 0.0 }?.value?.toFloat())
     }
     val maxValue by remember(transactions) {
-        mutableStateOf(transactions?.maxBy { it.value ?: 0.0 }?.value?.toFloat())
+        mutableStateOf(transactions?.maxByOrNull { it.value ?: 0.0 }?.value?.toFloat())
     }
     val minDate by remember(transactions) {
-        mutableStateOf(transactions?.minBy { it.timestamp ?: 0L }?.timestamp)
+        mutableStateOf(transactions?.minByOrNull { it.timestamp ?: 0L }?.timestamp)
     }
     val maxDate by remember(transactions) {
-        mutableStateOf(transactions?.maxBy { it.timestamp ?: 0L }?.timestamp)
+        mutableStateOf(transactions?.maxByOrNull { it.timestamp ?: 0L }?.timestamp)
     }
 
     val selectedFilterValue = viewModel.selectedFilter.collectAsState().value
@@ -149,11 +151,11 @@ fun TransactionsTabScreen(navController: NavController, viewModel: MainViewModel
                 .fillMaxSize()
         ) {
             LaunchedEffect(transactionsState) {
-                when (viewModel.transactions.value) {
+                when (val state = transactionsState) {
                     is RequestState.Loading -> isLoading = true
                     is RequestState.Success -> {
                         isLoading = false
-                        transactions = (transactionsState as RequestState.Success).data
+                        transactions = state.data
                     }
 
                     is RequestState.Error -> {
@@ -161,7 +163,7 @@ fun TransactionsTabScreen(navController: NavController, viewModel: MainViewModel
                         snackbarType.value = SnackbarType.ERROR
                         coroutineScope.launch {
                             snackBarHostState.showSnackbar(
-                                message = (transactionsState as RequestState.Error).message
+                                message = state.message
                             )
                         }
                     }
@@ -447,6 +449,33 @@ fun TransactionsTabScreen(navController: NavController, viewModel: MainViewModel
                                             ).orDash(),
                                             isDividerToggled = false
                                         )
+                                        TextButton(
+                                            onClick = {
+                                                val transactionToAdd = UserTransaction(
+                                                    uniqueId = it.uniqueId,
+                                                    title = it.title,
+                                                    description = it.description,
+                                                    value = it.value,
+                                                    timestamp = it.timestamp,
+                                                    type = it.type,
+                                                    categoryName = it.categoryName
+                                                )
+                                                navController.navigate(
+                                                    "${LumenScreens.ADD_TRANSACTIONS_SCREEN}/" +
+                                                            "${URLEncoder.encode(Json.encodeToString(transactionToAdd), "UTF-8")}/"
+                                                            + true
+                                                )
+                                            },
+                                            contentPadding = PaddingValues(0.dp)
+                                        ) {
+                                            Row {
+                                                Text(stringResource(R.string.transactions_edit_label))
+                                                Icon(
+                                                    imageVector = Icons.Rounded.ChevronRight,
+                                                    contentDescription = stringResource(R.string.transactions_edit_label)
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                             }

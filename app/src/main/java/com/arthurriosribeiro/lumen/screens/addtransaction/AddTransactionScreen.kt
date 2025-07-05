@@ -59,6 +59,7 @@ import com.arthurriosribeiro.lumen.model.TransactionType
 import com.arthurriosribeiro.lumen.model.UserTransaction
 import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
 import com.arthurriosribeiro.lumen.utils.NetworkUtils
+import com.arthurriosribeiro.lumen.utils.NumberFormatProvider
 import com.arthurriosribeiro.lumen.utils.formatDate
 import com.arthurriosribeiro.lumen.utils.toSystemZoneMillis
 import kotlinx.coroutines.launch
@@ -70,7 +71,9 @@ import java.util.UUID
 @Composable
 fun AddTransactionsScreen(
     navController: NavController,
-    viewModel: MainViewModel
+    viewModel: MainViewModel,
+    isEditScreen: Boolean = false,
+    userTransaction: UserTransaction? = null
 ) {
     val lostConnectionMessage = stringResource(R.string.lost_connection_message)
     val transactionSuccessfullyAddedMessage = stringResource(R.string.add_transactions_transaction_successfully_added)
@@ -87,23 +90,26 @@ fun AddTransactionsScreen(
 
     val scrollState = rememberScrollState()
 
+    val numberFormat = NumberFormatProvider.getNumberFormat(viewModel.getLocaleByLanguage())
+
     val transaction = rememberSaveable {
-        mutableStateOf("")
+        mutableStateOf(userTransaction?.title ?: "")
     }
     val value = rememberSaveable {
-        mutableStateOf("")
+        mutableStateOf((userTransaction?.value ?: 0).toString())
     }
     val timestamp = rememberSaveable {
-        mutableLongStateOf(0L)
+        mutableLongStateOf(userTransaction?.timestamp ?: 0L)
     }
     val description = rememberSaveable {
-        mutableStateOf("")
+        mutableStateOf(userTransaction?.description?.replace("+", " ") ?: "")
     }
     val (selectedTransactionType, onSelectTransactionType) = rememberSaveable {
-        mutableStateOf(TransactionType.EXPENSES)
-    }
+        mutableStateOf(userTransaction?.type?.let { TransactionType.valueOf(it) } ?: TransactionType.EXPENSES)
+        }
 
     val datePickerState = rememberDatePickerState()
+
     var isDatePickerDialogOpened by rememberSaveable {
         mutableStateOf(false)
     }
@@ -112,7 +118,8 @@ fun AddTransactionsScreen(
         mutableStateOf(false)
     }
     var selectedCategoryDropdownMenuOption by rememberSaveable {
-        mutableStateOf(TransactionCategory.OTHER_EXPENSE)
+        mutableStateOf(userTransaction?.categoryName?.let { TransactionCategory.valueOf(it) }
+            ?: TransactionCategory.OTHER_EXPENSE)
     }
 
     val isError = remember {
@@ -123,6 +130,10 @@ fun AddTransactionsScreen(
 
     var isLoading by remember {
         mutableStateOf(false)
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.clearAddTransactionState()
     }
 
     Scaffold(
@@ -136,7 +147,6 @@ fun AddTransactionsScreen(
                         modifier = Modifier.padding(end = 24.dp),
                         onClick = {
                             navController.popBackStack()
-                            viewModel.clearAddTransactionState()
                         }) {
                         Icon(
                             imageVector = Icons.Rounded.Close,
@@ -324,8 +334,8 @@ fun AddTransactionsScreen(
                             .parse(value.value)
                             ?.toDouble()
 
-                        val userTransaction = UserTransaction(
-                            uniqueId = UUID.randomUUID().toString(),
+                        val transactionToAdd = UserTransaction(
+                            uniqueId = userTransaction?.uniqueId ?: UUID.randomUUID().toString(),
                             title = transaction.value,
                             description = description.value,
                             value = doubleValue,
@@ -335,13 +345,42 @@ fun AddTransactionsScreen(
                         )
 
                         if (isError.value.isEmpty() && isConnected) {
-                            viewModel.addTransactionOnFirestore(
-                                userTransaction,
-                                context
-                            )
+                            if (isEditScreen) {
+                                coroutineScope.launch {
+                                    viewModel.editTransactionOnFirestore(
+                                        transactionToAdd.copy(
+                                            isSyncedWithFirebase = true
+                                        ),
+                                        context
+                                    )
+                                }
+                            } else {
+                                viewModel.addTransactionOnFirestore(
+                                    transactionToAdd.copy(
+                                        isSyncedWithFirebase = true
+                                    ),
+                                    context
+                                )
+                            }
                         } else {
-                            coroutineScope.launch {
-                                viewModel.addTransactionToSql(userTransaction, context)
+                            if (isEditScreen) {
+                                coroutineScope.launch {
+                                    viewModel.editTransactionOnSql(
+                                        transactionToAdd.copy(
+                                            isSyncedWithFirebase = false
+                                        ),
+                                        context
+                                    )
+                                }
+                            } else {
+                                coroutineScope.launch {
+                                    viewModel.addTransactionToSql(
+                                        transactionToAdd.copy(
+                                        isSyncedWithFirebase = false
+                                    ),
+                                        context
+                                    )
+                                }
                             }
                         }
                     }
@@ -368,7 +407,6 @@ fun AddTransactionsScreen(
 
                         if (result == SnackbarResult.Dismissed || result == SnackbarResult.ActionPerformed) {
                             navController.popBackStack()
-                            viewModel.clearAddTransactionState()
                         }
                     }
                 }

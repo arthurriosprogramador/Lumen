@@ -13,13 +13,28 @@ class LumenRepository @Inject constructor(private val lumenDao: LumenDao) {
 
     suspend fun selectAllTransactions() : List<UserTransaction> = lumenDao.selectAllTransactions()
 
-    suspend fun selectTransactionByType(type: TransactionType) : List<UserTransaction> = lumenDao.selectTransactionByType(type.name)
-
-    suspend fun selectTransactionByTimestamp(selectedTimestamp: Long) : List<UserTransaction> = lumenDao.selectTransactionByTimestamp(selectedTimestamp)
-
-    suspend fun selectTransactionByTimestampRange(initialTimestamp: Long, finalTimestamp: Long) : List<UserTransaction> = lumenDao.selectTransactionByTimestampRange(initialTimestamp, finalTimestamp)
-
     suspend fun deleteTransaction(userTransaction: UserTransaction) = lumenDao.deleteTransaction(userTransaction)
+
+    suspend fun updateTransaction(
+        uniqueId: String,
+        title: String,
+        description: String,
+        value: Double,
+        timestamp: Long,
+        type: String,
+        categoryName: String,
+        isSyncedWithFirebase: Boolean) = lumenDao.updateTransaction(
+        uniqueId,
+        title,
+        description,
+        value,
+        timestamp,
+        type,
+        categoryName,
+        isSyncedWithFirebase
+        )
+
+    suspend fun updateIsSyncedWithFirebase(isSyncedWithFirebase: Boolean, uniqueId: String) = lumenDao.updateIsSyncedWithFirebase(isSyncedWithFirebase, uniqueId)
 
     suspend fun deleteAllTransactions() = lumenDao.deleteAllUserTransactions()
     //End of the region

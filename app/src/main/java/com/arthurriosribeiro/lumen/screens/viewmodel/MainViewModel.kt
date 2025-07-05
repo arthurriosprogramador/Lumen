@@ -2,6 +2,7 @@ package com.arthurriosribeiro.lumen.screens.viewmodel
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -26,11 +27,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
@@ -215,6 +216,57 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    suspend fun editTransactionOnFirestore(transaction: UserTransaction, context: Context) {
+        _addTransactionState.value = RequestState.Loading
+        firestore.collection(FirestoreCollectionUtils.TRANSACTIONS_COLLECTION)
+            .whereEqualTo(FirestoreCollectionUtils.TRANSACTIONS_UNIQUE_ID, transaction.uniqueId)
+            .get()
+            .addOnSuccessListener {
+                val documents = it.documents.firstOrNull()?.reference
+
+                documents
+                    ?.set(
+                        mapOf(
+                            FirestoreCollectionUtils.TRANSACTION_TITLE to transaction.title,
+                            FirestoreCollectionUtils.TRANSACTION_DESCRIPTION to transaction.description,
+                            FirestoreCollectionUtils.TRANSACTION_VALUE to transaction.value,
+                            FirestoreCollectionUtils.TRANSACTION_TIMESTAMP to transaction.timestamp,
+                            FirestoreCollectionUtils.TRANSACTION_TYPE to transaction.type,
+                            FirestoreCollectionUtils.TRANSACTION_CATEGORY_NAME to transaction.categoryName
+                        ))?.addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            _addTransactionState.value = RequestState.Success(Unit)
+                            editTransactionOnSql(transaction, context)
+                        } else {
+                            val exceptionMessage = task.exception?.message
+                            _addTransactionState.value = handleExceptionMessage(exceptionMessage, context)
+                        }
+                    }
+            }
+    }
+
+    fun editTransactionOnSql(transaction: UserTransaction, context: Context) {
+        _addTransactionState.value = RequestState.Loading
+        viewModelScope.launch {
+            try {
+                val updated = lumenRepository.updateTransaction(
+                    uniqueId = transaction.uniqueId,
+                    title = transaction.title.orEmpty(),
+                    description = transaction.description.orEmpty(),
+                    value = transaction.value ?: 0.0,
+                    timestamp = transaction.timestamp ?: 0L,
+                    type = transaction.type,
+                    categoryName = transaction.categoryName.orEmpty(),
+                    isSyncedWithFirebase = transaction.isSyncedWithFirebase
+                )
+                Log.d("ROOM UPDATES", updated.toString())
+                _addTransactionState.value = RequestState.Success(Unit)
+            } catch (e: Exception) {
+                _addTransactionState.value = handleExceptionMessage(e.message, context)
+            }
+        }
+    }
+
     fun getAllTransactionsFromFirestore(context: Context) {
         _transactions.value = RequestState.Loading
         firestore.collection(FirestoreCollectionUtils.TRANSACTIONS_COLLECTION)
@@ -251,26 +303,39 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private suspend fun isFirestoreDataUpdated(transactionsFromFirestore: List<UserTransaction>, context: Context) : Boolean {
+    private suspend fun isFirestoreDataUpdated(
+        transactionsFromFirestore: List<UserTransaction>,
+        context: Context,) : Boolean {
 
         val transactionsFromRoom = withContext(Dispatchers.IO) {
             lumenRepository.selectAllTransactions()
         }
-
+        val isRoomEmpty = transactionsFromRoom.isEmpty()
         val roomIds = transactionsFromRoom.map { it.uniqueId }.toSet()
         val firestoreIds = transactionsFromFirestore.map { it.uniqueId }.toSet()
 
-        val transactionsToAdd = transactionsFromRoom.filter { it.uniqueId !in firestoreIds }
-        val transactionsToDelete = transactionsFromFirestore.filter { it.uniqueId !in roomIds }
+        val transactionsToAdd = transactionsFromRoom.filter { it.uniqueId !in firestoreIds  || !it.isSyncedWithFirebase}
+        val transactionsToDelete = if (isRoomEmpty) emptyList() else transactionsFromFirestore.filter { it.uniqueId !in roomIds }
 
         transactionsToAdd.forEach { transaction ->
-            addTransactionOnFirestore(transaction, context)
+            if (!transaction.isSyncedWithFirebase) {
+                editTransactionOnFirestore(transaction, context)
+            } else {
+                addTransactionOnFirestore(transaction, context)
+            }
+        }
+
+        if (isRoomEmpty) {
+            transactionsFromFirestore.forEach { transaction ->
+                addTransactionToSql(transaction.copy(isSyncedWithFirebase = true), context)
+            }
         }
 
         transactionsToDelete.forEach {
             deleteTransactionFromFirestore(it.uniqueId, context)
         }
-        return false
+
+        return transactionsToAdd.isEmpty() && transactionsToDelete.isEmpty()
     }
 
     fun applyFilter(

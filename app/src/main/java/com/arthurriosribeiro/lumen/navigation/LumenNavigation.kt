@@ -21,6 +21,7 @@ import androidx.navigation.navArgument
 import com.arthurriosribeiro.lumen.R
 import com.arthurriosribeiro.lumen.model.Currencies
 import com.arthurriosribeiro.lumen.model.Languages
+import com.arthurriosribeiro.lumen.model.UserTransaction
 import com.arthurriosribeiro.lumen.screens.addtransaction.AddTransactionsScreen
 import com.arthurriosribeiro.lumen.screens.filter.FilterScreen
 import com.arthurriosribeiro.lumen.screens.home.HomeScreen
@@ -31,6 +32,7 @@ import com.arthurriosribeiro.lumen.screens.viewmodel.AuthViewModel
 import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
 import com.arthurriosribeiro.lumen.utils.LocalActivity
 import com.arthurriosribeiro.lumen.utils.languages.LocaleUtils
+import kotlinx.serialization.json.Json
 import java.util.Locale
 
 @Composable
@@ -121,11 +123,31 @@ fun LumenNavigation() {
             }
 
             composable(
-                LumenScreens.ADD_TRANSACTIONS_SCREEN.name,
+                "${LumenScreens.ADD_TRANSACTIONS_SCREEN.name}/" +
+                        "{${LumenArguments.USER_TRANSACTION}}/" +
+                        "{${LumenArguments.IS_EDIT_SCREEN}}",
                 enterTransition = { verticalEnterTransition },
-                exitTransition = { verticalExitTransition }
+                exitTransition = { verticalExitTransition },
+                arguments = listOf(
+                    navArgument(name = LumenArguments.USER_TRANSACTION) {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    },
+                    navArgument(name = LumenArguments.IS_EDIT_SCREEN) {
+                        type = NavType.BoolType
+                        defaultValue = false
+                    }
+                )
             ) {
-                AddTransactionsScreen(navController, mainViewModel)
+                val userTransactionJson = it.arguments?.getString(LumenArguments.USER_TRANSACTION)
+                val userTransaction = if (userTransactionJson == null) null else Json.decodeFromString<UserTransaction>(userTransactionJson)
+                AddTransactionsScreen(
+                    navController,
+                    mainViewModel,
+                    isEditScreen = it.arguments?.getBoolean(LumenArguments.IS_EDIT_SCREEN) ?: false,
+                    userTransaction = userTransaction
+                )
             }
 
             composable(
@@ -173,4 +195,6 @@ object LumenArguments {
     const val END_VALUE = "endValue"
     const val START_DATE = "startDate"
     const val END_DATE = "endDate"
+    const val USER_TRANSACTION = "userTransaction"
+    const val IS_EDIT_SCREEN = "isEditScreen"
 }

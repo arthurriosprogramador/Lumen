@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
 
     id("com.google.devtools.ksp")
     id("kotlin-parcelize")
@@ -52,6 +53,7 @@ dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
@@ -102,4 +104,7 @@ dependencies {
     implementation(libs.googleid)
     implementation(libs.firebase.auth.ktx)
     implementation(libs.firebase.firestore)
+
+    //Vico - chart
+    implementation(libs.vico.compose.m3)
 }

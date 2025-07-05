@@ -18,17 +18,33 @@ interface LumenDao {
     @Query("SELECT * FROM user_transactions")
     suspend fun selectAllTransactions() : List<UserTransaction>
 
-    @Query("SELECT * FROM user_transactions WHERE type = :type")
-    suspend fun selectTransactionByType(type: String) : List<UserTransaction>
-
-    @Query("SELECT * FROM user_transactions WHERE timestamp >= :selectedTimestamp")
-    suspend fun selectTransactionByTimestamp(selectedTimestamp: Long) : List<UserTransaction>
-
-    @Query("SELECT * FROM user_transactions WHERE timestamp >= :initialTimestamp AND timestamp <= :finalTimestamp")
-    suspend fun selectTransactionByTimestampRange(initialTimestamp: Long, finalTimestamp: Long) : List<UserTransaction>
-
     @Delete
     suspend fun deleteTransaction(userTransaction: UserTransaction)
+
+    @Query("""
+        UPDATE user_transactions SET
+            title = :title,
+            description = :description,
+            value = :value,
+            timestamp = :timestamp,
+            type = :type,
+            categoryName = :categoryName,
+            isSyncedWithFirebase = :isSyncedWithFirebase
+        WHERE uniqueId = :uniqueId
+    """)
+    suspend fun updateTransaction(
+        uniqueId: String,
+        title: String,
+        description: String,
+        value: Double,
+        timestamp: Long,
+        type: String,
+        categoryName: String,
+        isSyncedWithFirebase: Boolean
+    )
+
+    @Query("UPDATE user_transactions SET isSyncedWithFirebase = :isSyncedWithFirebase WHERE uniqueId = :uniqueId")
+    suspend fun updateIsSyncedWithFirebase(isSyncedWithFirebase: Boolean, uniqueId: String)
 
     @Query("DELETE FROM user_transactions")
     suspend fun deleteAllUserTransactions()
