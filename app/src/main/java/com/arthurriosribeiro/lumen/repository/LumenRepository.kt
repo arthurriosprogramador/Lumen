@@ -17,6 +17,7 @@ class LumenRepository @Inject constructor(private val lumenDao: LumenDao) {
 
     suspend fun updateTransaction(
         uniqueId: String,
+        uid: String,
         title: String,
         description: String,
         value: Double,
@@ -25,6 +26,7 @@ class LumenRepository @Inject constructor(private val lumenDao: LumenDao) {
         categoryName: String,
         isSyncedWithFirebase: Boolean) = lumenDao.updateTransaction(
         uniqueId,
+        uid,
         title,
         description,
         value,

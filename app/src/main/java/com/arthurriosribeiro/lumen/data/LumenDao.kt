@@ -23,6 +23,7 @@ interface LumenDao {
 
     @Query("""
         UPDATE user_transactions SET
+            uid = :uid,
             title = :title,
             description = :description,
             value = :value,
@@ -34,6 +35,7 @@ interface LumenDao {
     """)
     suspend fun updateTransaction(
         uniqueId: String,
+        uid: String,
         title: String,
         description: String,
         value: Double,

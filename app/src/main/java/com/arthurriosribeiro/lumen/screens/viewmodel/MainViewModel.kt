@@ -58,6 +58,8 @@ class MainViewModel @Inject constructor(
     private val _selectedFilter: MutableStateFlow<TransactionFilter?> = MutableStateFlow(null)
     val selectedFilter: StateFlow<TransactionFilter?> = _selectedFilter
 
+    val uid get() = firebaseAuth.uid.orEmpty()
+
     suspend fun getAccountConfig() : AccountConfiguration? {
             val config = runCatching {
                 lumenRepository.selectAccountConfiguration()
@@ -216,7 +218,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    suspend fun editTransactionOnFirestore(transaction: UserTransaction, context: Context) {
+    fun editTransactionOnFirestore(transaction: UserTransaction, context: Context) {
         _addTransactionState.value = RequestState.Loading
         firestore.collection(FirestoreCollectionUtils.TRANSACTIONS_COLLECTION)
             .whereEqualTo(FirestoreCollectionUtils.TRANSACTIONS_UNIQUE_ID, transaction.uniqueId)
@@ -227,6 +229,8 @@ class MainViewModel @Inject constructor(
                 documents
                     ?.set(
                         mapOf(
+                            FirestoreCollectionUtils.USER_ID to transaction.uid,
+                            FirestoreCollectionUtils.TRANSACTIONS_UNIQUE_ID to transaction.uniqueId,
                             FirestoreCollectionUtils.TRANSACTION_TITLE to transaction.title,
                             FirestoreCollectionUtils.TRANSACTION_DESCRIPTION to transaction.description,
                             FirestoreCollectionUtils.TRANSACTION_VALUE to transaction.value,
@@ -252,6 +256,7 @@ class MainViewModel @Inject constructor(
                 val updated = lumenRepository.updateTransaction(
                     uniqueId = transaction.uniqueId,
                     title = transaction.title.orEmpty(),
+                    uid = transaction.uid.orEmpty(),
                     description = transaction.description.orEmpty(),
                     value = transaction.value ?: 0.0,
                     timestamp = transaction.timestamp ?: 0L,
@@ -384,6 +389,7 @@ class MainViewModel @Inject constructor(
                     input.copyTo(output)
                 }
             }
+            file.absolutePath
             file.absolutePath
         } catch (e: IOException) {
             e.printStackTrace()

@@ -31,7 +31,7 @@ data class UserTransaction(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val uniqueId: String,
-    val firebaseId: String? = null,
+    val uid: String? = null,
     val title: String? = null,
     val description: String? = null,
     val value: Double? = null,

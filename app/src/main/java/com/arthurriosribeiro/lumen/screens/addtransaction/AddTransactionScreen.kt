@@ -336,6 +336,7 @@ fun AddTransactionsScreen(
 
                         val transactionToAdd = UserTransaction(
                             uniqueId = userTransaction?.uniqueId ?: UUID.randomUUID().toString(),
+                            uid = viewModel.uid,
                             title = transaction.value,
                             description = description.value,
                             value = doubleValue,

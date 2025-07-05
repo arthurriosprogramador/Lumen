@@ -471,6 +471,9 @@ fun TransactionsTabScreen(navController: NavController, viewModel: MainViewModel
                                             Row {
                                                 Text(stringResource(R.string.transactions_edit_label))
                                                 Icon(
+                                                    modifier = Modifier
+                                                        .size(20.dp)
+                                                        .align(Alignment.CenterVertically),
                                                     imageVector = Icons.Rounded.ChevronRight,
                                                     contentDescription = stringResource(R.string.transactions_edit_label)
                                                 )

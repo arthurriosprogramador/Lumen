@@ -37,7 +37,6 @@ fun List<DocumentSnapshot>.convertFirestoreDocumentToUserTransactionList() : Lis
     this.forEach {
         val transaction = UserTransaction(
             uniqueId = it.getString(FirestoreCollectionUtils.TRANSACTIONS_UNIQUE_ID).orEmpty(),
-            firebaseId = it.id,
             title = it.getString(FirestoreCollectionUtils.TRANSACTION_TITLE),
             description = it.getString(FirestoreCollectionUtils.TRANSACTION_DESCRIPTION),
             value = it.getDouble(FirestoreCollectionUtils.TRANSACTION_VALUE),
