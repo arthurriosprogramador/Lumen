@@ -18,9 +18,6 @@ interface LumenDao {
     @Query("SELECT * FROM user_transactions")
     suspend fun selectAllTransactions() : List<UserTransaction>
 
-    @Delete
-    suspend fun deleteTransaction(userTransaction: UserTransaction)
-
     @Query("""
         UPDATE user_transactions SET
             uid = :uid,
@@ -50,6 +47,9 @@ interface LumenDao {
 
     @Query("DELETE FROM user_transactions")
     suspend fun deleteAllUserTransactions()
+
+    @Query("DELETE FROM user_transactions WHERE uniqueId = :uniqueId")
+    suspend fun deleteUserTransaction(uniqueId: String)
     //End of the region
 
     //Account configuration user

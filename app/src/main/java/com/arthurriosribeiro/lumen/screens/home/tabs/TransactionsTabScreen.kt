@@ -1,5 +1,6 @@
 package com.arthurriosribeiro.lumen.screens.home.tabs
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,6 +21,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.SettingsInputComponent
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
@@ -45,6 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -63,6 +67,7 @@ import com.arthurriosribeiro.lumen.model.TransactionType
 import com.arthurriosribeiro.lumen.model.UserTransaction
 import com.arthurriosribeiro.lumen.navigation.LumenScreens
 import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
+import com.arthurriosribeiro.lumen.utils.NetworkUtils
 import com.arthurriosribeiro.lumen.utils.formatDate
 import com.arthurriosribeiro.lumen.utils.formatDoubleAsCurrency
 import com.arthurriosribeiro.lumen.utils.orDash
@@ -76,12 +81,20 @@ import java.util.Date
 @Composable
 fun TransactionsTabScreen(navController: NavController, viewModel: MainViewModel) {
 
+    val transactionSucessMessage = stringResource(R.string.transactions_delete_success_message)
+
     val coroutineScope = rememberCoroutineScope()
+
+    val context = LocalContext.current
+
+    val networkMonitor = remember { NetworkUtils(context) }
+    val isConnected by networkMonitor.isConnected.collectAsState()
 
     val snackBarHostState = remember { SnackbarHostState() }
     val snackbarType = remember { mutableStateOf<SnackbarType?>(null) }
 
     val transactionsState by viewModel.transactions.collectAsState()
+    val deleteTransactionState by viewModel.deleteTransaction.collectAsState()
 
     var transactions by rememberSaveable {
         mutableStateOf<List<UserTransaction>?>(null)
@@ -155,7 +168,7 @@ fun TransactionsTabScreen(navController: NavController, viewModel: MainViewModel
                     is RequestState.Loading -> isLoading = true
                     is RequestState.Success -> {
                         isLoading = false
-                        transactions = state.data
+                        transactions = state.data.sortedBy { it.timestamp }
                     }
 
                     is RequestState.Error -> {
@@ -168,6 +181,35 @@ fun TransactionsTabScreen(navController: NavController, viewModel: MainViewModel
                         }
                     }
 
+                    else -> {}
+                }
+            }
+
+            LaunchedEffect(deleteTransactionState) {
+                when (val state = deleteTransactionState) {
+                    is RequestState.Loading -> isLoading = true
+                    is RequestState.Success -> {
+                        isLoading = false
+                        snackbarType.value = SnackbarType.SUCCESS
+                        coroutineScope.launch {
+                            snackBarHostState.showSnackbar(
+                                message = transactionSucessMessage
+                            )
+                        }
+                        if (viewModel.accountConfig.value?.isUserLoggedIn == true && isConnected) viewModel.getAllTransactionsFromFirestore(context)
+                        else viewModel.getAllTransactionsFromSql(context)
+                        viewModel.clearDeleteTransactionState()
+                    }
+                    is RequestState.Error -> {
+                        isLoading = false
+                        snackbarType.value = SnackbarType.ERROR
+                        coroutineScope.launch {
+                            snackBarHostState.showSnackbar(
+                                message = state.message
+                            )
+                        }
+                        viewModel.clearDeleteTransactionState()
+                    }
                     else -> {}
                 }
             }
@@ -449,34 +491,70 @@ fun TransactionsTabScreen(navController: NavController, viewModel: MainViewModel
                                             ).orDash(),
                                             isDividerToggled = false
                                         )
-                                        TextButton(
-                                            onClick = {
-                                                val transactionToAdd = UserTransaction(
-                                                    uniqueId = it.uniqueId,
-                                                    title = it.title,
-                                                    description = it.description,
-                                                    value = it.value,
-                                                    timestamp = it.timestamp,
-                                                    type = it.type,
-                                                    categoryName = it.categoryName
-                                                )
-                                                navController.navigate(
-                                                    "${LumenScreens.ADD_TRANSACTIONS_SCREEN}/" +
-                                                            "${URLEncoder.encode(Json.encodeToString(transactionToAdd), "UTF-8")}/"
-                                                            + true
-                                                )
-                                            },
-                                            contentPadding = PaddingValues(0.dp)
-                                        ) {
-                                            Row {
-                                                Text(stringResource(R.string.transactions_edit_label))
-                                                Icon(
-                                                    modifier = Modifier
-                                                        .size(20.dp)
-                                                        .align(Alignment.CenterVertically),
-                                                    imageVector = Icons.Rounded.ChevronRight,
-                                                    contentDescription = stringResource(R.string.transactions_edit_label)
-                                                )
+                                        Row {
+                                            TextButton(
+                                                onClick = {
+                                                    val transactionToAdd = UserTransaction(
+                                                        uniqueId = it.uniqueId,
+                                                        title = it.title,
+                                                        description = it.description,
+                                                        value = it.value,
+                                                        timestamp = it.timestamp,
+                                                        type = it.type,
+                                                        categoryName = it.categoryName
+                                                    )
+                                                    navController.navigate(
+                                                        "${LumenScreens.ADD_TRANSACTIONS_SCREEN}/" +
+                                                                "${
+                                                                    URLEncoder.encode(
+                                                                        Json.encodeToString(
+                                                                            transactionToAdd
+                                                                        ), "UTF-8"
+                                                                    )
+                                                                }/"
+                                                                + true
+                                                    )
+                                                },
+                                                contentPadding = PaddingValues(0.dp)
+                                            ) {
+                                                Row {
+                                                    Text(stringResource(R.string.transactions_edit_label))
+                                                    Icon(
+                                                        modifier = Modifier
+                                                            .size(20.dp)
+                                                            .align(Alignment.CenterVertically),
+                                                        imageVector = Icons.Rounded.Edit,
+                                                        contentDescription = stringResource(R.string.transactions_edit_label)
+                                                    )
+                                                }
+                                            }
+                                            TextButton(
+                                                modifier = Modifier
+                                                    .padding(start = 16.dp),
+                                                onClick = {
+                                                    if (viewModel.accountConfig.value?.isUserLoggedIn == true && isConnected) {
+                                                        viewModel.deleteTransactionFromFirestore(it.uniqueId, context)
+                                                    } else {
+                                                        viewModel.deleteTransactionFromSql(it.uniqueId, context)
+                                                    }
+                                                },
+                                                contentPadding = PaddingValues(0.dp)
+                                            ) {
+                                                Row {
+                                                    Text(
+
+                                                        stringResource(R.string.transactions_delete),
+                                                        color = MaterialTheme.colorScheme.error
+                                                    )
+                                                    Icon(
+                                                        modifier = Modifier
+                                                            .size(20.dp)
+                                                            .align(Alignment.CenterVertically),
+                                                        imageVector = Icons.Rounded.Delete,
+                                                        contentDescription = stringResource(R.string.transactions_delete),
+                                                        tint = MaterialTheme.colorScheme.error
+                                                    )
+                                                }
                                             }
                                         }
                                     }
@@ -490,5 +568,4 @@ fun TransactionsTabScreen(navController: NavController, viewModel: MainViewModel
             if (isLoading) LumenCircularProgressIndicator()
         }
     }
-
 }

@@ -13,8 +13,6 @@ class LumenRepository @Inject constructor(private val lumenDao: LumenDao) {
 
     suspend fun selectAllTransactions() : List<UserTransaction> = lumenDao.selectAllTransactions()
 
-    suspend fun deleteTransaction(userTransaction: UserTransaction) = lumenDao.deleteTransaction(userTransaction)
-
     suspend fun updateTransaction(
         uniqueId: String,
         uid: String,
@@ -39,6 +37,8 @@ class LumenRepository @Inject constructor(private val lumenDao: LumenDao) {
     suspend fun updateIsSyncedWithFirebase(isSyncedWithFirebase: Boolean, uniqueId: String) = lumenDao.updateIsSyncedWithFirebase(isSyncedWithFirebase, uniqueId)
 
     suspend fun deleteAllTransactions() = lumenDao.deleteAllUserTransactions()
+
+    suspend fun deleteUserTransaction(uniqueId: String) = lumenDao.deleteUserTransaction(uniqueId)
     //End of the region
 
     //Account configuration user

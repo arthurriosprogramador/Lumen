@@ -96,7 +96,7 @@ fun AddTransactionsScreen(
         mutableStateOf(userTransaction?.title ?: "")
     }
     val value = rememberSaveable {
-        mutableStateOf((userTransaction?.value ?: 0).toString())
+        mutableStateOf(userTransaction?.value?.toString() ?: "")
     }
     val timestamp = rememberSaveable {
         mutableLongStateOf(userTransaction?.timestamp ?: 0L)

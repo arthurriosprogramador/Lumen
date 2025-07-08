@@ -102,6 +102,7 @@
     <string name="transactions_search_label">Search</string>
     <string name="transactions_edit_label">Edit</string>
     <string name="transactions_delete">Delete</string>
+    <string name="transactions_delete_success_message">Transaction deleted successfully</string>
 
     <!-- Transactions Tab  -->
     <string name="filter_screen_title">Filter</string>

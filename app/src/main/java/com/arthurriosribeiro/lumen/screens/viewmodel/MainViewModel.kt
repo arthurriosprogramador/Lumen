@@ -193,6 +193,7 @@ class MainViewModel @Inject constructor(
                 if (task.isSuccessful) {
                     task.result.documents.firstOrNull()?.reference?.delete()?.addOnCompleteListener { deleteTask ->
                         if (deleteTask.isSuccessful) {
+                            deleteTransactionFromSql(uniqueId, context)
                             _deleteTransactionState.value = RequestState.Success(Unit)
                         } else {
                             val exceptionMessage = deleteTask.exception?.message
@@ -204,6 +205,18 @@ class MainViewModel @Inject constructor(
                     _deleteTransactionState.value = handleExceptionMessage(exceptionMessage, context)
                 }
             }
+    }
+
+    fun deleteTransactionFromSql(uniqueId: String, context: Context) {
+        _deleteTransactionState.value = RequestState.Loading
+        viewModelScope.launch {
+            try {
+                lumenRepository.deleteUserTransaction(uniqueId)
+                _deleteTransactionState.value = RequestState.Success(Unit)
+            } catch (e: Exception) {
+                _deleteTransactionState.value = handleExceptionMessage(e.message, context)
+            }
+        }
     }
 
     fun addTransactionToSql(transaction: UserTransaction, context: Context) {
@@ -436,5 +449,9 @@ class MainViewModel @Inject constructor(
 
     fun clearAddTransactionState() {
         _addTransactionState.value = null
+    }
+
+    fun clearDeleteTransactionState() {
+        _deleteTransactionState.value = null
     }
  }
