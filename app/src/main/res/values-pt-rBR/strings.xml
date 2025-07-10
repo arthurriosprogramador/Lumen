@@ -104,7 +104,7 @@
     <string name="transactions_delete">Apagar</string>
     <string name="transactions_delete_success_message">Transação excluída com sucesso</string>
 
-    <!-- Transactions Tab  -->
+    <!-- Filter Screen  -->
     <string name="filter_screen_title">Filtro</string>
     <string name="filter_transaction_type">Tipo de transação</string>
     <string name="filter_transaction_category">Categoria de transação</string>
@@ -115,4 +115,14 @@
     <string name="filter_transaction_apply_filter">Aplicar filtro</string>
     <string name="filter_transaction_clear_filter">Limpar filtro</string>
     <string name="filter_transaction_filters_applied">Filtros aplicados</string>
+
+    <!-- Finance Track Tab  -->
+    <string name="finance_tracker_filter_type">Por Transação</string>
+    <string name="finance_tracker_filter_Category">Por Categoria</string>
+    <string name="finance_tracker_filter_current_month">Mês atual</string>
+    <string name="finance_tracker_filter_last_month">Mês passado</string>
+    <string name="finance_tracker_filter_last_three_months">Últimos 3 meses</string>
+    <string name="finance_tracker_filter_last_six_months">Últimos 6 meses</string>
+    <string name="finance_tracker_filter_last_twelve_months">Últimos 12 meses</string>
+    <string name="finance_tracker_filter_all_transactions">Todas a transações</string>
 </resources>

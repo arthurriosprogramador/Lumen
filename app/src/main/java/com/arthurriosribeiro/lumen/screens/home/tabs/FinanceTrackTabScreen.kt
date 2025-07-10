@@ -3,8 +3,19 @@ package com.arthurriosribeiro.lumen.screens.home.tabs
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
@@ -24,6 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.arthurriosribeiro.lumen.R
 import com.arthurriosribeiro.lumen.components.LumenCircularProgressIndicator
+import com.arthurriosribeiro.lumen.components.LumenDropdownMenu
 import com.arthurriosribeiro.lumen.components.LumenSnackbarHost
 import com.arthurriosribeiro.lumen.components.SnackbarType
 import com.arthurriosribeiro.lumen.model.RequestState
@@ -47,6 +59,36 @@ fun FinanceTrackTabScreen(viewModel: MainViewModel) {
 
     var transactions by rememberSaveable {
         mutableStateOf<List<UserTransaction>?>(null)
+    }
+
+    val transactionFilterOptions = listOf(
+        stringResource(R.string.finance_tracker_filter_type),
+        stringResource(R.string.finance_tracker_filter_Category)
+    )
+
+    val transactionFilterByTime = listOf(
+        stringResource(R.string.finance_tracker_filter_current_month),
+        stringResource(R.string.finance_tracker_filter_last_month),
+        stringResource(R.string.finance_tracker_filter_last_three_months),
+        stringResource(R.string.finance_tracker_filter_last_six_months),
+        stringResource(R.string.finance_tracker_filter_last_twelve_months),
+        stringResource(R.string.finance_tracker_filter_all_transactions)
+    )
+
+    var isTransactionFilterExpanded by rememberSaveable {
+        mutableStateOf(false)
+    }
+
+    var selectedTransactionFilterOption by rememberSaveable {
+        mutableStateOf(transactionFilterOptions.first())
+    }
+
+    var isTransactionFilterByTimeExpanded by rememberSaveable {
+        mutableStateOf(false)
+    }
+
+    var selectedTransactionFilterByTimeOption by rememberSaveable {
+        mutableStateOf(transactionFilterByTime.first())
     }
 
     Scaffold(
@@ -83,7 +125,7 @@ fun FinanceTrackTabScreen(viewModel: MainViewModel) {
             if (transactionsState is RequestState.Success) {
                 if (transactions.isNullOrEmpty()) {
                     Column(
-                        Modifier
+                        modifier = Modifier
                             .fillMaxSize(),
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
@@ -93,6 +135,65 @@ fun FinanceTrackTabScreen(viewModel: MainViewModel) {
                             style = MaterialTheme.typography.headlineSmall,
                             modifier = Modifier.padding(24.dp)
                         )
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .padding(innerPadding)
+                            .fillMaxSize()
+                    ) {
+                        item {
+                            ElevatedCard(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(1.5F),
+                                shape = RoundedCornerShape(
+                                    topStart = 0.dp,
+                                    topEnd = 0.dp,
+                                    bottomStart = 24.dp,
+                                    bottomEnd = 24.dp),
+                                elevation = CardDefaults.elevatedCardElevation(
+                                    defaultElevation = 8.dp
+                                ),
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(24.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxSize(),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        LumenDropdownMenu(
+                                            modifier = Modifier
+                                                .weight(1F)
+                                                .padding(end = 24.dp),
+                                            menuOptions = transactionFilterOptions,
+                                            isExpanded = isTransactionFilterExpanded,
+                                            onIsExpandedChanged = {
+                                                isTransactionFilterExpanded = !isTransactionFilterExpanded
+                                            },
+                                            selectedOption = selectedTransactionFilterOption,
+                                            onOptionSelected = { selectedTransactionFilterOption = it },
+                                            onDismissRequest = { isTransactionFilterExpanded = false }
+                                        )
+                                        LumenDropdownMenu(
+                                            modifier = Modifier
+                                                .weight(1F),
+                                            menuOptions = transactionFilterByTime,
+                                            isExpanded = isTransactionFilterByTimeExpanded,
+                                            onIsExpandedChanged = {
+                                                isTransactionFilterByTimeExpanded = !isTransactionFilterByTimeExpanded
+                                            },
+                                            selectedOption = selectedTransactionFilterByTimeOption,
+                                            onOptionSelected = { selectedTransactionFilterByTimeOption = it },
+                                            onDismissRequest = { isTransactionFilterByTimeExpanded = false }
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
