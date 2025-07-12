@@ -20,7 +20,7 @@ android {
 
     defaultConfig {
         applicationId = "com.arthurriosribeiro.lumen"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -105,6 +105,6 @@ dependencies {
     implementation(libs.firebase.auth.ktx)
     implementation(libs.firebase.firestore)
 
-    //Vico - chart
-    implementation(libs.vico.compose.m3)
+    //YCharts
+    implementation(libs.ycharts)
 }

@@ -305,7 +305,7 @@ fun AddTransactionsScreen(
                     LumenDropdownMenu(
                         modifier = Modifier
                             .padding(top = 16.dp),
-                        menuOptions = TransactionCategory.entries.toList().dropLast(1),
+                        menuOptions = TransactionCategory.entries.toList(),
                         isExpanded = isCategoryDropdownMenuExpanded,
                         onIsExpandedChanged = {
                             isCategoryDropdownMenuExpanded = !isCategoryDropdownMenuExpanded

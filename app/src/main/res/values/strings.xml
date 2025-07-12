@@ -125,4 +125,6 @@
     <string name="finance_tracker_filter_last_six_months">Last 6 months</string>
     <string name="finance_tracker_filter_last_twelve_months">Last 12 months</string>
     <string name="finance_tracker_filter_all_transactions">All transactions</string>
+    <string name="finance_tracker_expenses">Expenses</string>
+    <string name="finance_tracker_incomes">Incomes</string>
 </resources>
