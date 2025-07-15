@@ -55,9 +55,7 @@ fun String?.orDash() : String {
     return if (this.isNullOrBlank()) "-" else this
 }
 
-fun Double.formatDoubleAsCurrency(locale: Locale, prefix: String) : String{
-
-
+fun Double.formatDoubleAsCurrency(locale: Locale, prefix: String) : String {
     return  "$prefix ${NumberFormatProvider.getNumberFormat(locale).format(this)}"
 }
 
@@ -82,3 +80,5 @@ fun Calendar.clearToMonthStart(): Calendar {
     set(Calendar.MILLISECOND, 0)
     return this
 }
+
+fun String.normalizeCategoryLabel() = this.lowercase().replaceFirstChar { char -> char.titlecase() }.replace("_", " ")
