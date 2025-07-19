@@ -81,6 +81,7 @@
 
     <!--  Add Transactions Screen  -->
     <string name="add_transactions_title">Add transaction</string>
+    <string name="edit_transactions_title">Edit transaction</string>
     <string name="add_transactions_transaction_label">Transaction</string>
     <string name="add_transactions_transaction_description">Transaction description</string>
     <string name="add_transactions_open_category_menu">Open category menu</string>

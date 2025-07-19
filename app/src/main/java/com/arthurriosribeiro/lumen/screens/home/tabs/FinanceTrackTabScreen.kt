@@ -262,7 +262,7 @@ fun FinanceTrackTabScreen(viewModel: MainViewModel) {
                                         LazyVerticalGrid(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .height(40.dp * (pieData.size / 2)),
+                                                .height(50.dp * (pieData.size / 2)),
                                             columns = GridCells.Fixed(2),
                                         ) {
                                             items(items = pieData) {

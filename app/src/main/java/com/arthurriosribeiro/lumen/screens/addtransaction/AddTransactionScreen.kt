@@ -90,8 +90,6 @@ fun AddTransactionsScreen(
 
     val scrollState = rememberScrollState()
 
-    val numberFormat = NumberFormatProvider.getNumberFormat(viewModel.getLocaleByLanguage())
-
     val transaction = rememberSaveable {
         mutableStateOf(userTransaction?.title ?: "")
     }
@@ -141,7 +139,7 @@ fun AddTransactionsScreen(
             .imePadding(),
         topBar = {
             LumenTopAppBar(
-                title = stringResource(R.string.add_transactions_title),
+                title = if (isEditScreen) stringResource(R.string.edit_transactions_title) else stringResource(R.string.add_transactions_title),
                 actions = {
                     IconButton(
                         modifier = Modifier.padding(end = 24.dp),
