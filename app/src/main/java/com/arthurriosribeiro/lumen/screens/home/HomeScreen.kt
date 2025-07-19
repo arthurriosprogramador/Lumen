@@ -87,6 +87,13 @@ fun HomeScreen(navController: NavController, viewModel: MainViewModel, authViewM
         }
     }
 
+    LaunchedEffect(viewModel.firebaseUser, viewModel.accountConfig.value) {
+        viewModel.updateUserLoggedIn(
+            viewModel.firebaseUser != null,
+            viewModel.accountConfig.value?.id ?: 0
+        )
+    }
+
     LaunchedEffect(isConnected) {
         if (viewModel.accountConfig.value?.isUserLoggedIn == true && !isConnected) {
             snackbarType.value = SnackbarType.ERROR

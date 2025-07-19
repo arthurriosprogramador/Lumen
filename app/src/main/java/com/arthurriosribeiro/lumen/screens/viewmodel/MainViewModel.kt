@@ -60,6 +60,8 @@ class MainViewModel @Inject constructor(
 
     val uid get() = firebaseAuth.uid.orEmpty()
 
+    val firebaseUser get() = firebaseAuth.currentUser
+
     suspend fun getAccountConfig() : AccountConfiguration? {
             val config = runCatching {
                 lumenRepository.selectAccountConfiguration()
@@ -140,6 +142,16 @@ class MainViewModel @Inject constructor(
                     fieldToUpdate = FirestoreCollectionUtils.USER_SELECTED_LANGUAGE,
                     fieldValue = language
                 )
+            }.onSuccess {
+                getAccountConfig()
+            }
+        }
+    }
+
+    fun updateUserLoggedIn(isUserLoggedIn: Boolean, id: Int) {
+        viewModelScope.launch {
+            runCatching {
+                lumenRepository.updateUserLoggedIn(isUserLoggedIn, id)
             }.onSuccess {
                 getAccountConfig()
             }
@@ -277,7 +289,6 @@ class MainViewModel @Inject constructor(
                     categoryName = transaction.categoryName.orEmpty(),
                     isSyncedWithFirebase = transaction.isSyncedWithFirebase
                 )
-                Log.d("ROOM UPDATES", updated.toString())
                 _addTransactionState.value = RequestState.Success(Unit)
             } catch (e: Exception) {
                 _addTransactionState.value = handleExceptionMessage(e.message, context)
