@@ -235,7 +235,7 @@ fun FinanceTrackTabScreen(viewModel: MainViewModel) {
                                                 .align(Alignment.CenterHorizontally)
                                                 .background(MaterialTheme.colorScheme.background)
                                                 .padding(top = 16.dp)
-                                                .height(300.dp),
+                                                .height(400.dp),
                                             pieChartData = PieChartData(
                                                 slices = pieData,
                                                 plotType = PlotType.Donut
@@ -262,7 +262,7 @@ fun FinanceTrackTabScreen(viewModel: MainViewModel) {
                                         LazyVerticalGrid(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .height(50.dp * (pieData.size / 2)),
+                                                .height(if (pieData.size > 1) 50.dp * (pieData.size / 2) else 50.dp),
                                             columns = GridCells.Fixed(2),
                                         ) {
                                             items(items = pieData) {
