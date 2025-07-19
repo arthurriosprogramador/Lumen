@@ -66,7 +66,7 @@ class AuthViewModel @Inject constructor(
             _signInState.value = RequestState.Loading
 
             val response = credentialManager.getCredential(context = context, request = request)
-            handleSignInResponse(response, accountConfiguration)
+            handleSignInResponse(response, accountConfiguration, context)
         } catch (e: Exception) {
             _signInState.value =
                 RequestState.Error(e.message ?: context.getString(R.string.default_error))
@@ -75,7 +75,8 @@ class AuthViewModel @Inject constructor(
 
     private suspend fun handleSignInResponse(
         response: GetCredentialResponse,
-        accountConfiguration: AccountConfiguration
+        accountConfiguration: AccountConfiguration,
+        context: Context
     ) {
         when (val credential = response.credential) {
             is CustomCredential -> {
@@ -87,7 +88,8 @@ class AuthViewModel @Inject constructor(
                     firebaseAuth.signInWithCredential(firebaseCredential).await()
                     sendUserInformationToFirestore(
                         (firebaseAuth.currentUser?.displayName ?: accountConfiguration.name),
-                        accountConfiguration
+                        accountConfiguration,
+                        context
                     )
                     _signInState.value = RequestState.Success(Unit)
                 }
@@ -112,7 +114,8 @@ class AuthViewModel @Inject constructor(
                 if (task.isSuccessful) {
                     sendUserInformationToFirestore(
                         name,
-                        accountConfiguration
+                        accountConfiguration,
+                        context
                     ).addOnCompleteListener {
                         if (it.isSuccessful) signInWithEmailAndPassword(
                             email = email,
@@ -178,7 +181,8 @@ class AuthViewModel @Inject constructor(
 
     private fun sendUserInformationToFirestore(
         name: String? = null,
-        accountConfiguration: AccountConfiguration
+        accountConfiguration: AccountConfiguration,
+        context: Context
     ): Task<QuerySnapshot> {
         return firestore.collection(FirestoreCollectionUtils.USERS_COLLECTION)
             .whereEqualTo(FirestoreCollectionUtils.USER_EMAIL, firebaseAuth.currentUser?.email)
@@ -206,6 +210,14 @@ class AuthViewModel @Inject constructor(
                                         id = accountConfiguration.id,
                                         isUserLoggedIn = true
                                     )
+                                }
+                            } else {
+                                val exceptionMessage = task.exception?.message
+                                if (exceptionMessage.isNullOrBlank()) {
+                                    _signInState.value =
+                                        RequestState.Error(context.getString(R.string.default_error))
+                                } else {
+                                    _signInState.value = RequestState.Error(exceptionMessage)
                                 }
                             }
                         }
