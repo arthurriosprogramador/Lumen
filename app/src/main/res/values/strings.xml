@@ -128,6 +128,7 @@
     <string name="finance_tracker_filter_all_transactions">All transactions</string>
     <string name="finance_tracker_expenses">Expenses</string>
     <string name="finance_tracker_incomes">Incomes</string>
+    <string name="finance_tracker_all_transactions">All</string>
     <string name="finance_tracker_balance">Account balance</string>
     <string name="finance_tracker_summary">%s summary</string>
 </resources>

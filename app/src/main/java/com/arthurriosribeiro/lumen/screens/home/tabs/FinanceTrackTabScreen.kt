@@ -34,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -73,8 +74,7 @@ import java.util.Calendar
 @Composable
 fun FinanceTrackTabScreen(viewModel: MainViewModel) {
 
-    val expensesLabel = stringResource(R.string.finance_tracker_expenses)
-    val incomesLabel = stringResource(R.string.finance_tracker_incomes)
+    val selectedLanguage = viewModel.accountConfig.value?.selectedLanguage
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -91,19 +91,23 @@ fun FinanceTrackTabScreen(viewModel: MainViewModel) {
         mutableStateOf<List<UserTransaction>?>(null)
     }
 
-    val transactionFilterOptions = listOf(
-        stringResource(R.string.finance_tracker_filter_type),
-        stringResource(R.string.finance_tracker_filter_Category)
-    )
+    val transactionFilterOptions = key(selectedLanguage) {
+        listOf(
+            stringResource(R.string.finance_tracker_filter_type),
+            stringResource(R.string.finance_tracker_filter_Category)
+        )
+    }
 
-    val transactionFilterByTime = listOf(
-        stringResource(R.string.finance_tracker_filter_current_month),
-        stringResource(R.string.finance_tracker_filter_last_month),
-        stringResource(R.string.finance_tracker_filter_last_three_months),
-        stringResource(R.string.finance_tracker_filter_last_six_months),
-        stringResource(R.string.finance_tracker_filter_last_twelve_months),
-        stringResource(R.string.finance_tracker_filter_all_transactions)
-    )
+    val transactionFilterByTime = key(selectedLanguage) {
+        listOf(
+            stringResource(R.string.finance_tracker_filter_current_month),
+            stringResource(R.string.finance_tracker_filter_last_month),
+            stringResource(R.string.finance_tracker_filter_last_three_months),
+            stringResource(R.string.finance_tracker_filter_last_six_months),
+            stringResource(R.string.finance_tracker_filter_last_twelve_months),
+            stringResource(R.string.finance_tracker_filter_all_transactions)
+        )
+    }
 
     var isTransactionFilterExpanded by rememberSaveable {
         mutableStateOf(false)
@@ -121,20 +125,16 @@ fun FinanceTrackTabScreen(viewModel: MainViewModel) {
         mutableStateOf(transactionFilterByTime.first())
     }
 
-    val pieData = remember(
-        selectedTransactionFilterOption,
-        selectedTransactionFilterByTimeOption,
-        transactions
-    ) {
-        getChartData(
-            incomesLabel,
-            expensesLabel,
-            transactionFilterOptions,
-            selectedTransactionFilterOption,
-            transactionFilterByTime,
-            selectedTransactionFilterByTimeOption,
-            transactions
-        )
+    val pieData by remember {
+        derivedStateOf {
+            getChartData(
+                transactionFilterOptions,
+                selectedTransactionFilterOption,
+                transactionFilterByTime,
+                selectedTransactionFilterByTimeOption,
+                transactions
+            )
+        }
     }
 
     var labelSelected by rememberSaveable {
@@ -277,7 +277,7 @@ fun FinanceTrackTabScreen(viewModel: MainViewModel) {
                                                             .align(Alignment.CenterVertically)
                                                     )
                                                     Text(
-                                                        text = it.label.normalizeCategoryLabel(),
+                                                        text = it.label.toLocalizedCategoryLabel(),
                                                         modifier = Modifier
                                                             .align(Alignment.CenterVertically)
                                                             .padding(start = 8.dp),
@@ -474,8 +474,6 @@ fun FinanceTrackTabScreen(viewModel: MainViewModel) {
 
 
 private fun getChartData(
-    incomeLabel: String,
-    expenseLabel: String,
     filterOptions: List<String>,
     selectedFilterOption: String,
     filterByTimeOptions: List<String>,
@@ -496,8 +494,8 @@ private fun getChartData(
             .sumOf { it.value ?: 0.0}
 
         listOfNotNull(
-            if (expensesSum > 0) PieChartData.Slice(expenseLabel, expensesSum.toFloat(), Color.Red) else null,
-            if (incomeSum > 0) PieChartData.Slice(incomeLabel, incomeSum.toFloat(), Color.Green) else null
+            if (expensesSum > 0) PieChartData.Slice(TransactionType.EXPENSES.name, expensesSum.toFloat(), Color.Red) else null,
+            if (incomeSum > 0) PieChartData.Slice(TransactionType.INCOME.name, incomeSum.toFloat(), Color.Green) else null
         )
     } else {
         val categoriesColor = listOf(
@@ -592,5 +590,26 @@ private fun List<UserTransaction>.filterByPeriod(
             transactionDate.after(twelveMonthsAgo)
         }
         else -> this
+    }
+}
+
+@Composable
+fun String.toLocalizedCategoryLabel() : String {
+    return when(this) {
+        TransactionCategory.CREDIT_CARD.name -> stringResource(R.string.credit_card_label)
+        TransactionCategory.FOOD.name -> stringResource(R.string.food_label)
+        TransactionCategory.CLOTHING.name -> stringResource(R.string.clothing_label)
+        TransactionCategory.SHOPPING.name -> stringResource(R.string.shopping_label)
+        TransactionCategory.BILLS.name -> stringResource(R.string.bills_label)
+        TransactionCategory.BEAUTY.name -> stringResource(R.string.beauty_and_self_care_label)
+        TransactionCategory.EDUCATION.name -> stringResource(R.string.education_label)
+        TransactionCategory.ENTERTAINMENT.name -> stringResource(R.string.entertainment_label)
+        TransactionCategory.PAYCHECK.name -> stringResource(R.string.paycheck_label)
+        TransactionCategory.OTHER_EXPENSE.name -> stringResource(R.string.other_expenses_label)
+        TransactionCategory.OTHER_INCOME.name -> stringResource(R.string.other_incomes_label)
+        TransactionType.EXPENSES.name -> stringResource(R.string.finance_tracker_expenses)
+        TransactionType.INCOME.name -> stringResource(R.string.finance_tracker_incomes)
+        TransactionType.ALL.name -> stringResource(R.string.finance_tracker_all_transactions)
+        else -> ""
     }
 }

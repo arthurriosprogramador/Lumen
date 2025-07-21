@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import com.arthurriosribeiro.lumen.R
 import com.arthurriosribeiro.lumen.model.Languages
 import com.arthurriosribeiro.lumen.model.TransactionType
 import com.arthurriosribeiro.lumen.screens.viewmodel.MainViewModel
@@ -58,7 +59,11 @@ fun <T>LumenRadioButton(
                                 }
 
                                 is TransactionType -> {
-                                    it.name.lowercase().replaceFirstChar { char -> char.uppercaseChar() }
+                                    when (it) {
+                                        TransactionType.EXPENSES -> stringResource(R.string.finance_tracker_expenses)
+                                        TransactionType.INCOME -> stringResource(R.string.finance_tracker_incomes)
+                                        TransactionType.ALL -> stringResource(R.string.finance_tracker_all_transactions)
+                                    }
                                 }
 
                                 else -> {

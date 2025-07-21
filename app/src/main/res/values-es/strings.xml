@@ -128,6 +128,7 @@
     <string name="finance_tracker_filter_all_transactions">Todas las transacciones</string>
     <string name="finance_tracker_expenses">Gastos</string>
     <string name="finance_tracker_incomes">Renda</string>
+    <string name="finance_tracker_all_transactions">Todas</string>
     <string name="finance_tracker_balance">Saldo de la cuenta</string>
     <string name="finance_tracker_summary">Resumen del mes actual</string>
 </resources>
