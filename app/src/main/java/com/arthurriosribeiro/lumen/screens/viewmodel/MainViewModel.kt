@@ -44,7 +44,7 @@ class MainViewModel @Inject constructor(
     ViewModel() {
 
     private val _accountConfig: MutableState<AccountConfiguration?> = mutableStateOf(null)
-    val accountConfig: State<AccountConfiguration?> = _accountConfig
+    val accountConfig: State<AccountConfiguration?> get() = _accountConfig
 
     private val _addTransactionState: MutableStateFlow<RequestState<Unit>?> = MutableStateFlow(null)
     val addTransactionState: StateFlow<RequestState<Unit>?> = _addTransactionState

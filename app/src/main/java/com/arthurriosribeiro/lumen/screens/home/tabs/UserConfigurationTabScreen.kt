@@ -70,9 +70,16 @@ fun UserConfigurationScreen(
     var showLanguageBottomSheet by remember { mutableStateOf(false) }
     var showCurrencyBottomSheet by remember { mutableStateOf(false) }
 
-    val name = remember {
-        mutableStateOf(viewModel.accountConfig.value?.name.orEmpty())
+    val accountConfig by viewModel.accountConfig
+
+    val name = remember(accountConfig) { accountConfig?.name.orEmpty() }
+
+    val tempName = remember { mutableStateOf(name) }
+
+    LaunchedEffect(accountConfig) {
+        tempName.value = accountConfig?.name.orEmpty()
     }
+
     val (selectedLanguage, onLanguageSelected) = remember {
         mutableStateOf(Languages.valueOf(viewModel.accountConfig.value?.selectedLanguage ?: Languages.EN.name))
     }
@@ -105,12 +112,12 @@ fun UserConfigurationScreen(
                             .fillMaxWidth()
                             .padding(top = 24.dp),
                         placeHolder = {},
-                        value = name
+                        value = tempName
                     )
                 },
                 isEditBottomSheet = true,
                 onEditButtonClick = {
-                    viewModel.updateUserName(name.value, viewModel.accountConfig.value?.id ?: 0)
+                    viewModel.updateUserName(tempName.value, viewModel.accountConfig.value?.id ?: 0)
                     showNameBottomSheet = false
                 }
             )
@@ -188,7 +195,7 @@ fun UserConfigurationScreen(
                         Text(
                             stringResource(
                                 R.string.user_configuration_greeting_user,
-                                viewModel.accountConfig.value?.name.orEmpty()
+                                tempName.value
                             ),
                             style = MaterialTheme.typography.headlineSmall
                         )
