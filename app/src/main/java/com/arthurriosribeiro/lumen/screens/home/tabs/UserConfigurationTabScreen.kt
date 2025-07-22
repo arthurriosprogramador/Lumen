@@ -72,12 +72,10 @@ fun UserConfigurationScreen(
 
     val accountConfig by viewModel.accountConfig
 
-    val name = remember(accountConfig) { accountConfig?.name.orEmpty() }
-
-    val tempName = remember { mutableStateOf(name) }
+    val name = remember { mutableStateOf(accountConfig?.name.orEmpty()) }
 
     LaunchedEffect(accountConfig) {
-        tempName.value = accountConfig?.name.orEmpty()
+        name.value = accountConfig?.name.orEmpty()
     }
 
     val (selectedLanguage, onLanguageSelected) = remember {
@@ -112,12 +110,12 @@ fun UserConfigurationScreen(
                             .fillMaxWidth()
                             .padding(top = 24.dp),
                         placeHolder = {},
-                        value = tempName
+                        value = name
                     )
                 },
                 isEditBottomSheet = true,
                 onEditButtonClick = {
-                    viewModel.updateUserName(tempName.value, viewModel.accountConfig.value?.id ?: 0)
+                    viewModel.updateUserName(name.value, viewModel.accountConfig.value?.id ?: 0)
                     showNameBottomSheet = false
                 }
             )
@@ -195,7 +193,7 @@ fun UserConfigurationScreen(
                         Text(
                             stringResource(
                                 R.string.user_configuration_greeting_user,
-                                tempName.value
+                                name.value
                             ),
                             style = MaterialTheme.typography.headlineSmall
                         )
