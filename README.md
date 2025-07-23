@@ -1,4 +1,4 @@
-#📱 Lumen – Expense Tracker
+# 📱 Lumen – Expense Tracker
 Lumen is a lightweight and intuitive Android application designed to help users track and manage their expenses. It was developed as my final project for Harvard’s CS50 course, using modern Android development practices and technologies such as Kotlin, Jetpack Compose, and Firebase.
 
 ### 🎥 Video Demo: https://youtu.be/DeaXhz4ox-g
