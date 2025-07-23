@@ -2,6 +2,8 @@
 
 Lumen Expense Tracker is a simple Android app to help you track your expenses. Built with Kotlin and Jetpack Compose as part of my CS50 final project.
 
+### Video Demo: https://youtu.be/DeaXhz4ox-g
+
 ### Description:
 This app supports both offline and online usage, allowing users to register through a sign-up screen and log in through a sign-in screen.
 
